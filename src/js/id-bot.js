@@ -28,10 +28,7 @@ class IdBot {
      * @returns {string}
      */
     #reminderMessage(messageImageInfo) {
-        if (messageImageInfo.isCorrectlyIdentified) {
-            throw new Error("No reminder message appropriate for correctly identified message.");
-        } else return messageImageInfo.idUnderIdentified ?
-            MESSAGE_HAS_MORE_IMAGES_THAN_IDS : MESSAGE_HAS_MORE_IDS_THAN_IMAGES;
+        return messageImageInfo.idUnderIdentified ? MESSAGE_HAS_MORE_IMAGES_THAN_IDS : MESSAGE_HAS_MORE_IDS_THAN_IMAGES;
     }
 
     /**

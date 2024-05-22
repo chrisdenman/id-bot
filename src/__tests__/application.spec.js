@@ -46,6 +46,9 @@ const createDiscordJsMessage = function (
             messages: {
                 delete: vi.fn().mockImplementationOnce(
                     () => new Promise((resolve) => resolve())
+                ),
+                fetch: vi.fn().mockImplementationOnce(
+                    () => new Promise((resolve) => resolve())
                 )
             }
         },
@@ -55,6 +58,7 @@ const createDiscordJsMessage = function (
 
 /**
  * @param {IdBotMessage} userMessage
+ * @param {IdBotMessage} replyContent
  */
 const createIdBotReply = function (userMessage, replyContent) {
     return createDiscordJsMessage(
@@ -93,7 +97,7 @@ describe("Application startup and shutdown", () => {
         application = new Application(process, idBot);
     });
 
-    it("That messages authored by other bots are ignored.", () => {
+    it("That messages authored by other bots are ignored even if they contain attachments that could be prompted in respect of.", () => {
         application.start(TOKEN);
         discordInterfaceHarness.onClientReady();
 
@@ -104,16 +108,37 @@ describe("Application startup and shutdown", () => {
         expect(discordJsMessage.reply).not.toBeCalled();
     });
 
-    // @todo that unknown media types for attachments are ignored
-    // @todo do updates come with new ids?
+    it("That updates for messages we are not tracking are handled.", () => {
+        application.start(TOKEN);
+        discordInterfaceHarness.onClientReady();
+
+        const updatedMessage = createDiscordJsMessage(CONTENT_EMPTY, ["image/png"], AUTHOR_ID__NOT_US, MessageType.Default, createUuid(), false);
+        discordInterfaceHarness.onMessageUpdate(undefined, updatedMessage);
+        expect(updatedMessage.reply).toBeCalledWith(UNDER_DESCRIBED_REMINDER_MESSAGE);
+
+        application.stop();
+    });
+
+    it(
+        "That messages with attachments that are non image media types are ignored.",
+        () => {
+            const [content, attachmentData] = ["A message with no image identifiers", ["text/html"]];
+            const userMessage = createDiscordJsMessage(content, attachmentData);
+            discordInterfaceHarness.onMessageCreate(userMessage);
+            expect(userMessage.reply).not.toBeCalled();
+        }
+    );
 
     describe(
         "Ensuring that new messages are given the correct reminder replies",
         () => [
             [CONTENT_EMPTY, ["image/png"], UNDER_DESCRIBED_REMINDER_MESSAGE, "ID: An image of something."],
             ["ID: A big shiny horse.", [], OVER_DESCRIBED_REMINDER_MESSAGE, CONTENT_EMPTY],
+            ["ID: A big shiny horse.", [], OVER_DESCRIBED_REMINDER_MESSAGE, undefined],
             ["ID: blah", ["image/png", "image/png"], UNDER_DESCRIBED_REMINDER_MESSAGE, "ID blah.ID: foo"],
             ["ID: A big shiny horse. ID: A mushroom!", ["image/png"], OVER_DESCRIBED_REMINDER_MESSAGE, "ID: A mushroom!"],
+            ["ID: A big shiny horse. ID: A mushroom!", ["image/png"], OVER_DESCRIBED_REMINDER_MESSAGE, undefined],
+            ["No image tags here.", [], undefined, undefined],
         ].forEach(([
                        content,
                        attachmentData,
@@ -130,27 +155,40 @@ describe("Application startup and shutdown", () => {
                         const userMessage = createDiscordJsMessage(content, attachmentData);
                         discordInterfaceHarness.onMessageCreate(userMessage);
 
-                        // IdBot replies
-                        expect(userMessage.reply).toBeCalledWith(expectedReplyContent);
+                        // IdBot replies iff the user's message is not properly tagged
+                        let idBotReplyMessage;
+                        if (expectedReplyContent !== undefined) {
+                            expect(userMessage.reply).toBeCalledWith(expectedReplyContent);
 
-                        // IdBot reply received by discord.js, idBot caches referenced message to idBot reply if the message is not correctly identified
-                        const idBotReplyMessage = createIdBotReply(userMessage, expectedReplyContent);
-                        discordInterfaceHarness.onMessageCreate(idBotReplyMessage);
+                            // IdBot reply received by discord.js, idBot caches referenced message to idBot reply if the message is not correctly identified
+                            idBotReplyMessage = createIdBotReply(userMessage, expectedReplyContent);
+                            discordInterfaceHarness.onMessageCreate(idBotReplyMessage);
+                        }
 
-                        // User edits their post to correct it
-                        const updatedUserMessage = createDiscordJsMessage(
-                            updatedContent,
-                            attachmentData,
-                            AUTHOR_ID__NOT_US,
-                            MessageType.Default,
-                            undefined,
-                            false,
-                            userMessage.id
-                        );
-                        discordInterfaceHarness.onMessageUpdate(userMessage, updatedUserMessage);
+                        // User deletes their message
+                        if (updatedContent === undefined) {
+                            discordInterfaceHarness.onMessageDelete(userMessage);
 
-                        // IdBot deletes its reply
-                        expect(updatedUserMessage.channel.messages.delete).toBeCalledWith(idBotReplyMessage.id);
+                            // IdBot deletes its reply if it produced one
+                            if (idBotReplyMessage !== undefined) {
+                                expect(userMessage.channel.messages.delete).toBeCalledWith(idBotReplyMessage.id);
+                            }
+                        } else { // User corrects the issue
+                            // User edits their post to correct it
+                            const updatedUserMessage = createDiscordJsMessage(
+                                updatedContent,
+                                attachmentData,
+                                AUTHOR_ID__NOT_US,
+                                MessageType.Default,
+                                undefined,
+                                false,
+                                userMessage.id
+                            );
+                            discordInterfaceHarness.onMessageUpdate(userMessage, updatedUserMessage);
+
+                            // IdBot deletes its reply
+                            expect(updatedUserMessage.channel.messages.delete).toBeCalledWith(idBotReplyMessage.id);
+                        }
                     });
             }
         )
