@@ -1,0 +1,49 @@
+{
+  "name": "@ceilingcat/id-bot",
+  "version": "0.0.1",
+  "description": "A discord bot to remind users to tag uploaded images with identifiers.",
+  "scripts": {
+    "start": "run-s execute",
+    "execute": "run-p auth-server id-bot",
+    "test": "vitest --coverage --config ./vitest.config.ts",
+    "id-bot": "node src/js/node-starter.js",
+    "auth-server": "node src/js/auth-server.js",
+    "lint": "eslint \"src/*/*.js\""
+  },
+  "main": "build/src/js/id-bot.js",
+  "type": "module",
+  "keywords": [
+    "discord",
+    "bot",
+    "image",
+    "tagged",
+    "id"
+  ],
+  "author": {
+    "name": "Chris Denman",
+    "email": "chrisdenman@ceilingcat.co.uk"
+  },
+  "license": "Unlicense",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/chrisdenman/id-bot.git"
+  },
+  "bugs": {
+    "url": "https://github.com/chrisdenman/id-bot/issues",
+    "email": "chrisdenman@ceilingcat.co.uk"
+  },
+  "homepage": "https://github.com/chrisdenman/id-bot",
+  "dependencies": {
+    "discord-api-types": "^0.37.84",
+    "discord.js": "^14.14.1",
+    "express": "^4.19.2"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.1.1",
+    "@vitest/coverage-v8": "^1.6.0",
+    "@vitest/ui": "^1.6.0",
+    "eslint": "^8.33.0",
+    "npm-run-all2": "^6.1.2",
+    "vitest": "^1.6.0"
+  }
+}
