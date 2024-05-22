@@ -13,6 +13,10 @@ A [Discord.js](https://discord.js.org/) bot to that replies to messages that lac
 
 A working version of node is required (Tested on `v21.6.2`).
 
+### Required Environment Variables
+- `id_bot_id` must be set to the bot's client identifier.
+- `id_bot_token` must be set to the bot's token. 
+
 `npm run start` - starts the OAuth server and application proper in parallel.
 
 ## QA

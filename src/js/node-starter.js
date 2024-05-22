@@ -1,4 +1,6 @@
 import {Factory} from "./factory.js";
-import {CONFIG as PRIVATE_CONFIG} from "./id-bot-private.js";
 
-new Factory().createApplication(PRIVATE_CONFIG.id).start(PRIVATE_CONFIG.token);
+const env = process.env;
+const id = env["id_bot_id"];
+const token = env["id_bot_token"];
+new Factory().createApplication(id).start(token);
