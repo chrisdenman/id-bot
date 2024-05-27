@@ -20,8 +20,8 @@ class Factory {
         return new Cache(this.createLogger("MessageIdToReplyIdCache"));
     }
 
-    createMessageImageInfo(numberOfImageAttachments, numberOfImageIds) {
-        return new MessageImageInfo(numberOfImageAttachments, numberOfImageIds);
+    createMessageImageInfo(imageAttachmentCount, emojiCount, imageIdentifierCount) {
+        return new MessageImageInfo(imageAttachmentCount, emojiCount, imageIdentifierCount);
     }
 
     createClient() {

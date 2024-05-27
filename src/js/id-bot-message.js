@@ -1,4 +1,5 @@
 import {isImageMediaType} from "./media-type.js";
+import {numberOfEmojiContained} from "./emoji.js";
 
 /**
  * @typedef {typeof import('./message-image-info.js')['MessageImageInfo']} MessageImageInfo
@@ -98,26 +99,42 @@ class IdBotMessage {
     }
 
     /**
+     * Calculates the number of image identifier contained within Discord message content.
+     *
      * @returns {number}
      */
-    get numberOfContentImageIdentifiers() {
+    get imageIdentifierCount() {
         return [...this.#discordJsMessage.content.matchAll(this.#MESSAGE_ID_VALIDATING_REGEXP)].length;
     }
 
     /**
-     * @returns {string[]}
+     * Calculates the number of distinct emoji contained within the Discord message content.
+     *
+     * @returns {number}
      */
-    get #messageImageAttachments() {
-        return [...this.#discordJsMessage.attachments.values()]
-            .map(v => v.contentType)
-            .filter(isImageMediaType);
+    get emojiCount() {
+        return numberOfEmojiContained(this.#discordJsMessage.content);
     }
 
     /**
+     * Calculates the sum of the number of: image identifiers and, emoji
+     *
      * @returns {number}
      */
-    get numberOfImageAttachments() {
-        return this.#messageImageAttachments.length;
+    get identifierCount() {
+        return this.imageIdentifierCount + this.emojiCount;
+    }
+
+    /**
+     *  Calculates and returns the number of image attachments referenced by this message.
+     *
+     * @returns {number}
+     */
+    get imageAttachmentCount() {
+        return [...this.#discordJsMessage.attachments.values()]
+            .map(v => v.contentType)
+            .filter(isImageMediaType)
+            .length;
     }
 
     /**
@@ -125,7 +142,7 @@ class IdBotMessage {
      */
     get imageInfo() {
         return this.#imageInfo = this.#imageInfo ||
-            this.#factory.createMessageImageInfo(this.numberOfImageAttachments, this.numberOfContentImageIdentifiers);
+            this.#factory.createMessageImageInfo(this.imageAttachmentCount, this.emojiCount, this.imageIdentifierCount);
     };
 
     /**

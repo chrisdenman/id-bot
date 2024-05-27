@@ -3,37 +3,49 @@ class MessageImageInfo {
     /**
      * @type {number}
      */
-    #numberOfImageAttachments;
+    #imageAttachmentCount;
 
     /**
      * @type {number}
      */
-    #numberOfImageIds;
+    #emojiCount;
 
     /**
-     * @param {number} numberOfImageAttachments - the number of image attachments
-     * @param {number} numberOfImageIds - the number of image identifiers
+     * @type {number}
      */
-    constructor(numberOfImageAttachments, numberOfImageIds) {
-        this.#numberOfImageAttachments = numberOfImageAttachments;
-        this.#numberOfImageIds = numberOfImageIds;
+    #entitiesRequiringIdentificationCount;
+
+    /**
+     * @type {number}
+     */
+    #imageIdentifierCount;
+
+    /**
+     * @param {number} imageAttachmentCount - the number of image attachments
+     * @param {number} emojiCount - the number emoji characters
+     * @param {number} imageIdentifierCount - the number of image identifiers
+     */
+    constructor(imageAttachmentCount, emojiCount, imageIdentifierCount) {
+        this.#imageAttachmentCount = imageAttachmentCount;
+        this.#emojiCount = emojiCount;
+        this.#entitiesRequiringIdentificationCount = this.#imageAttachmentCount + this.#emojiCount;
+        this.#imageIdentifierCount = imageIdentifierCount;
     }
 
     get idUnderIdentified() {
-        return this.#numberOfImageIds < this.#numberOfImageAttachments;
+        return this.#imageIdentifierCount < this.#entitiesRequiringIdentificationCount;
     }
 
     get isCorrectlyIdentified() {
-        return this.#numberOfImageIds === this.#numberOfImageAttachments;
+        return this.#imageIdentifierCount === this.#entitiesRequiringIdentificationCount;
     }
 
     get isOverIdentified() {
-        return this.#numberOfImageIds > this.#numberOfImageAttachments;
+        return this.#imageIdentifierCount > this.#entitiesRequiringIdentificationCount;
     }
 
     toString() {
-        return `message has ${this.#numberOfImageAttachments} image attachments ` +
-            `and ${this.#numberOfImageIds} image identifiers`;
+        return `imageAttachmentCount=${this.#imageAttachmentCount}, imageIdentifierCount=${this.#imageIdentifierCount}, emojiCount=${this.#emojiCount}`;
     }
 }
 

@@ -18,6 +18,7 @@ const UNDER_DESCRIBED_REMINDER_MESSAGE = "Hello! Please add an ID for each image
 const OVER_DESCRIBED_REMINDER_MESSAGE = "Hello! Whoops, did you forget an image? ❤️";
 const AUTHOR_ID__NOT_US = createUuid();
 const CONTENT_EMPTY = "";
+const RESOLVES_TO = arg => new Promise(resolve => resolve(arg));
 
 const createDiscordJsMessage = function (
     content = CONTENT_EMPTY,
@@ -44,12 +45,8 @@ const createDiscordJsMessage = function (
         },
         channel: {
             messages: {
-                delete: vi.fn().mockImplementationOnce(
-                    () => new Promise((resolve) => resolve())
-                ),
-                fetch: vi.fn().mockImplementationOnce(
-                    () => new Promise((resolve) => resolve())
-                )
+                delete: vi.fn().mockImplementationOnce(RESOLVES_TO),
+                fetch: vi.fn().mockImplementationOnce(RESOLVES_TO)
             }
         },
         reply: vi.fn()
@@ -80,9 +77,7 @@ describe("Application startup and shutdown", () => {
         client = {
             once: vi.fn(),
             on: vi.fn(),
-            login: vi.fn().mockImplementationOnce(
-                () => new Promise((resolve) => resolve())
-            ),
+            login: vi.fn().mockImplementationOnce(RESOLVES_TO),
             close: vi.fn(),
             user: {
                 tag: "tag"
@@ -97,9 +92,28 @@ describe("Application startup and shutdown", () => {
         application = new Application(process, idBot);
     });
 
+    // it("That  failures to login are resolved by logging them and rethrowing.", () => {
+    //     factory = new Factory();
+    //     process = {on: vi.fn(), exit: vi.fn()};
+    //     client = {once: vi.fn(), on: vi.fn(), login: vi.fn().mockImplementationOnce(REJECTS_TO)};
+    //     discordInterfaceHarness = new DiscordInterfaceHarness(
+    //         client,
+    //         factory,
+    //         factory.createLogger(`DiscordInterface for ${CLIENT_ID}`),
+    //         CLIENT_ID);
+    //     idBot = new IdBot(factory.createCache(), discordInterfaceHarness, new Logger(console, "IdBot"));
+    //     let unhandledErrorCaught = false;
+    //     try {
+    //         new Application(process, idBot).start("");
+    //     } catch(e) {
+    //         unhandledErrorCaught = true;
+    //     }
+    //     expect(unhandledErrorCaught).toBe(true);
+    // });
+
     it("That messages authored by other bots are ignored even if they contain attachments that could be prompted in respect of.", () => {
         application.start(TOKEN);
-        discordInterfaceHarness.onClientReady();
+        discordInterfaceHarness.onClientReady();        
 
         const discordJsMessage = createDiscordJsMessage(CONTENT_EMPTY, ["image/png"], AUTHOR_ID__NOT_US, MessageType.Default, undefined, true);
         discordInterfaceHarness.onMessageCreate(discordJsMessage);
