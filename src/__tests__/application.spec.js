@@ -86,9 +86,9 @@ describe("Application startup and shutdown", () => {
         discordInterfaceHarness = new DiscordInterfaceHarness(
             client,
             factory,
-            factory.createLogger(`DiscordInterface for ${CLIENT_ID}`),
+            factory.createLogger(`DiscordInterface(${CLIENT_ID})`),
             CLIENT_ID);
-        idBot = new IdBot(factory.createCache(), discordInterfaceHarness, new Logger(console, "IdBot"));
+        idBot = new IdBot(factory.createCache(), discordInterfaceHarness, new Logger(console, `IdBot(${CLIENT_ID})`));
         application = new Application(process, idBot);
     });
 
@@ -127,7 +127,7 @@ describe("Application startup and shutdown", () => {
         discordInterfaceHarness.onClientReady();
 
         const updatedMessage = createDiscordJsMessage(CONTENT_EMPTY, ["image/png"], AUTHOR_ID__NOT_US, MessageType.Default, createUuid(), false);
-        discordInterfaceHarness.onMessageUpdate(undefined, updatedMessage);
+        discordInterfaceHarness.onMessageUpdate(updatedMessage, updatedMessage);
         expect(updatedMessage.reply).toBeCalledWith(UNDER_DESCRIBED_REMINDER_MESSAGE);
 
         application.stop();

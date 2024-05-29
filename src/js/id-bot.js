@@ -24,11 +24,11 @@ class IdBot {
     #logger;
 
     /**
-     * @param {MessageImageInfo} messageImageInfo
+     * @param {ImageIdStats} imageIdStats
      * @returns {string}
      */
-    #reminderMessage(messageImageInfo) {
-        return messageImageInfo.idUnderIdentified ? MESSAGE_HAS_MORE_IMAGES_THAN_IDS : MESSAGE_HAS_MORE_IDS_THAN_IMAGES;
+    #reminderMessage(imageIdStats) {
+        return imageIdStats.isUnderIdentified ? MESSAGE_HAS_MORE_IMAGES_THAN_IDS : MESSAGE_HAS_MORE_IDS_THAN_IMAGES;
     }
 
     /**
@@ -36,22 +36,22 @@ class IdBot {
      * @param messageId
      */
     #deleteChannelMessage(channel, messageId) {
-        this.#logger.debug(`attempting to delete replies to message with id=${messageId}`);
+        this.#logger.debug(`deleting channel message with id=${messageId}`);
         this.#discordInterface.deleteMessage(channel, messageId);
     }
 
     /**
      * @param {IdBotMessage} message
      */
-    #deleteRepliesTo(message) {
+    #deleteOurReplyTo(message) {
         const messageId = message.id;
-        this.#logger.debug(`deleting our reply to messageId=${messageId}`);
-        const replyId = this.#cache.getValue(messageId);
+        this.#logger.info(`deleting our reply to ${message.toIdString()}`);
+        const replyId = this.#cache.get(messageId);
         if (replyId) {
             this.#deleteChannelMessage(message.channel, replyId);
-            this.#cache.delete(messageId);
+            this.#cache.remove(messageId);
         } else {
-            this.#logger.warn(`no known reply, nothing to delete`);
+            this.#logger.warn(`${message.toIdString()} has no known replies`);
         }
     }
 
@@ -64,52 +64,46 @@ class IdBot {
      * @returns {Promise<void>}
      */
     #onMessageCreate = async message => {
-        this.#logger.debug(`message created with id=${message.id}, content="${message.content}"`);
+        this.#logger.debug(`new ${message}`);
 
         if (message.isAuthorHuman) {
-            this.#logger.debug(`message authored by a human`);
-
-            const imageInfo = message.imageInfo;
-            this.#logger.debug(imageInfo.toString());
-            if (!imageInfo.isCorrectlyIdentified) {
-                this.#logger.debug(`message is not correctly identified, adding reminder reply.`);
-                this.#discordInterface.replyTo(message, this.#reminderMessage(imageInfo));
+            const imageIdStats = message.imageIdStats;
+            if (!imageIdStats.isCorrectlyIdentified) {
+                const reminderMessage = this.#reminderMessage(imageIdStats);
+                this.#logger.debug(
+                    `${message.toIdString()} is not correctly identified, replying with "${reminderMessage}".`
+                );
+                this.#discordInterface.replyTo(message, reminderMessage);
             }
         } else {
-            this.#logger.debug(`onMessageCreate: message author is a bot`);
-
             if (this.#discordInterface.isSelfAuthored(message)) {
-                this.#logger.debug(`we authored this message`);
                 const referencedMessageId = message.referencedMessageId;
-                this.#discordInterface.fetchMessage(
-                    message.channel,
-                    referencedMessageId,
-                    referencedMessage => {
-                        const imageInfo = referencedMessage.imageInfo;
-                        if (!imageInfo.isCorrectlyIdentified) {
-                            this.#cache.add(referencedMessageId, message.id);
-                        }
-                    });
+                this.#logger.debug(`${message.toIdString()} is our new reminder reply to ${referencedMessageId}."`);
+
+                this.#cache.set(referencedMessageId, message.id);
             }
         }
     };
 
     /**
-     * @param _
+     * @param {IdBotMessage} originalMessage
      * @param {IdBotMessage} updatedMessage
      * @returns {Promise<void>}
      */
-    #onMessageUpdate = async (_, updatedMessage) => {
-        this.#logger.debug(`message updated id=${updatedMessage.id}, msg="${updatedMessage.content}"`);
+    #onMessageUpdate = async (originalMessage, updatedMessage) => {
+        this.#logger.debug(`updated ${updatedMessage}`);
 
         if (updatedMessage.isAuthorHuman) {
-            this.#logger.debug(`message updated by a human`);
+            this.#logger.debug(`${updatedMessage.toIdString()} updated by a mortal`);
+            const imageIdStats = updatedMessage.imageIdStats;
 
-            const imageInfo = updatedMessage.imageInfo;
-            this.#deleteRepliesTo(updatedMessage);
-            if (!imageInfo.isCorrectlyIdentified) {
-                this.#logger.debug(`message updated but not currently identified, adding reminder`);
-                this.#discordInterface.replyTo(updatedMessage, this.#reminderMessage(imageInfo));
+            if (!imageIdStats.isCorrectlyIdentified) {
+                this.#deleteOurReplyTo(updatedMessage);
+                const replyMessageContent = this.#reminderMessage(imageIdStats);
+                this.#logger.debug(`${updatedMessage.toIdString()} not correctly identified, replying with "${replyMessageContent}"`);
+                this.#discordInterface.replyTo(updatedMessage, replyMessageContent);
+            } else {
+                this.#deleteOurReplyTo(updatedMessage);
             }
         }
     };
@@ -119,10 +113,10 @@ class IdBot {
      * @returns {Promise<void>}
      */
     #onMessageDelete = async message => {
-        this.#logger.debug(`onMessageDelete: id=${message.id}`);
+        this.#logger.debug(`deleted id=${message.toIdString()}`);
         if (message.isAuthorHuman) {
             this.#logger.debug(`onMessageDelete: message author is human`);
-            this.#deleteRepliesTo(message);
+            this.#deleteOurReplyTo(message);
         }
     };
 

@@ -67,10 +67,10 @@ class DiscordInterface {
         client.on(Events.MessageDelete, this._onMessageDelete.bind(this));
     }
 
-    _createIdBotMessage = (discordJsMessage) => this.#factory.createIdBotMessage(discordJsMessage);
+    _createIdBotMessage = discordJsMessage => this.#factory.createIdBotMessage(discordJsMessage);
 
     _onClientReady(client) {
-        this._logger.log(`Logged in as ${client.user.tag}`);
+        this._logger.log(`Logged in as "${client.user.tag}" and ready.`);
         this?.#onClientReadyHandler(client);
     }
 
@@ -85,25 +85,19 @@ class DiscordInterface {
         );
     }
 
-    async _onMessageDelete(message) {
-        this?.#onMessageDeleteHandler(this._createIdBotMessage(message));
+    get clientId() {
+        return this.#clientId;
     }
 
-    fetchMessage(channel, messageId, f) {
-        channel
-            .messages
-            .fetch(messageId)
-            .then(message => f(this._createIdBotMessage(message)))
-            .catch(this._logger.error);
+    async _onMessageDelete(message) {
+        this?.#onMessageDeleteHandler(this._createIdBotMessage(message));
     }
 
     /**
      * @param {IdBotMessage} message
      * @returns {boolean}
      */
-    isSelfAuthored(message) {
-        return message.isReplyBy(this.#clientId);
-    }
+    isSelfAuthored = (message) => message.isReplyBy(this.#clientId);
 
     /**
      * @param {IdBotMessage} received
@@ -124,10 +118,7 @@ class DiscordInterface {
             .messages
             .delete(messageId)
             .then(() => this._logger.debug(`deleted reply with id=${messageId}`))
-            .catch(e => {
-                this._logger.error(`could not delete reply with id=${messageId}`);
-                this._logger.error(e);
-            });
+            .catch(e => this._logger.error(`could not delete reply with id=${messageId}`, e));
     }
 
     /**

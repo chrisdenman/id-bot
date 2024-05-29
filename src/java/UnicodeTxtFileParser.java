@@ -6,22 +6,25 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 
-class Scratch implements Runnable {
+class UnicodeTxtFileParser implements Runnable {
 
-    /*
-        Emoji 	Emoji 	=Yes for characters that are emoji
-        Emoji_Presentation 	EPres 	=Yes for characters that have emoji presentation by default
-        Emoji_Modifier_Base 	EBase 	=Yes for characters that can serve as a base for emoji modifiers
-        Emoji_Modifier 	EMod 	=Yes for characters that are emoji modifiers
-        Emoji_Component 	EComp 	=Yes for characters used in emoji sequences that normally do not appear on emoji keyboards as separate choices, such as keycap base characters or Regional_Indicator characters. All characters in emoji sequences are either Emoji or Emoji_Component. Implementations must not, however, assume that all Emoji_Component characters are also Emoji. There are some non-emoji characters that are used in various emoji sequences, such as tag characters and ZWJ.
-        Extended_Pictographic 	ExtPict 	=Yes for characters that are used to future-proof segmentation. The Extended_Pictographic characters contain all the Emoji characters except for some Emoji_Component characters.
-     */
     enum UnicodeCharacterProperty {
+        // "...for characters that are emoji"
         EMOJI("Emoji"),
+        // "...for characters that have emoji presentation by default"
         EMOJI_PRESENTATION("Emoji_Presentation"),
+        // "...for characters that are emoji modifiers"
         EMOJI_MODIFIER("Emoji_Modifier"),
+        // "...for characters that can serve as a base for emoji modifiers"
         EMOJI_MODIFIER_BASE("Emoji_Modifier_Base"),
-        EMOJI_COMPONENT("Emoji_Component"),
+        // "...for characters used in emoji sequences that normally do not appear on emoji keyboards as separate
+        // choices, such as keycap base characters or Regional_Indicator characters. All characters in emoji sequences
+        // are either Emoji or Emoji_Component. Implementations must not, however, assume that all Emoji_Component
+        // characters are also Emoji. There are some non-emoji characters that are used in various emoji sequences, such
+        // as tag characters and ZWJ."
+        EMOJI_COMPONENT("Emoji_Component"), //
+        // "...for characters that are used to future-proof segmentation. The Extended_Pictographic characters contain
+        // all the Emoji characters except for some Emoji_Component characters."
         EXTENDED_PICTOGRAPHIC("Extended_Pictographic");
 
         private final String textFileValue;
@@ -157,7 +160,6 @@ class Scratch implements Runnable {
 
         System.out.println(sortable);
 
-        // Mimises the storage by representing code-point ranges by arrays of [start,end] (inclusive).
 //        var startIndex = 0;
 //        while (startIndex < sortable.size() ) {
 //            var windowHeight = 0;
@@ -178,6 +180,6 @@ class Scratch implements Runnable {
     }
 
     public static void main(String[] args) throws IOException {
-        new Scratch().run();
+        new UnicodeTxtFileParser().run();
     }
 }

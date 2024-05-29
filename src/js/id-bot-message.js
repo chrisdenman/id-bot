@@ -2,7 +2,7 @@ import {isImageMediaType} from "./media-type.js";
 import {numberOfEmojiContained} from "./emoji.js";
 
 /**
- * @typedef {typeof import('./message-image-info.js')['MessageImageInfo']} MessageImageInfo
+ * @typedef {typeof import('./image-id-stats.js')['ImageIdStats']} ImageIdStats
  * @typedef {typeof import('discord.js')['Snowflake']} Snowflake
  * @typedef {typeof import('discord.js').Message} Message
  * @typedef {typeof import('discord.js').MessagePayload} MessagePayload
@@ -13,25 +13,19 @@ import {MessageType} from "discord-api-types/v10";
 class IdBotMessage {
 
     /**
-     * @type {Factory}
+     * @type {ImageIdStats}
      */
-    #factory;
-
-    /**
-     * @type {MessageImageInfo}
-     */
-    #imageInfo;
-
-    /**
-     * @type {Logger}
-     */
-    #logger;
+    #imageIdStats;
 
     /**
      * @type {RegExp}
      */
-    #MESSAGE_ID_VALIDATING_REGEXP = /ID:(\s*)\w+/svg;
-    // #MESSAGE_ID_VALIDATING_REGEXP = /(?<=[^\^\W]WID:)(ID:(\s*)?.+)(?=((\WID:)|$))/svg;
+    #MESSAGE_ID_VALIDATING_REGEXP = /(?<=(^|\s|\W)ID:\s*)(\w+)(?!\WID:)/svg;
+
+    /**
+     * @type {RegExp}
+     */
+    #CUSTOM_EMOJI_REGEX = /<(a)?:(?<name>\w+):(?<id>\d+)>/g;
 
     /**
      *@type {Message}
@@ -47,7 +41,7 @@ class IdBotMessage {
     }
 
     get referencedMessageId() {
-        return this.#discordJsMessage.reference.messageId;
+        return this.#discordJsMessage?.reference?.messageId;
     }
 
     get content() {
@@ -55,7 +49,7 @@ class IdBotMessage {
     }
 
     /**
-     * @param {string | MessagePayload | MessageReplyOptions} content
+     * @param {string} content
      */
     reply(content) {
         return this.#discordJsMessage.reply(content);
@@ -72,12 +66,7 @@ class IdBotMessage {
      * @returns {boolean}
      */
     get isAuthorHuman() {
-        const isAuthorHuman = !this.#discordJsMessage.author.bot;
-        this.#logger?.debug(
-            `author of message with id ${this.#discordJsMessage.id} is a ${isAuthorHuman ? "human" : "bot"}`
-        );
-
-        return isAuthorHuman;
+        return !this.#discordJsMessage.author.bot;
     }
 
     /**
@@ -92,68 +81,56 @@ class IdBotMessage {
      * @returns {boolean}
      */
     isReplyBy(authorId) {
-        const isOurReply = this.isAuthoredBy(authorId) && this.isReply;
-        this.#logger?.debug(`author of message with id ${this.#discordJsMessage.id} is ${isOurReply ? "" : "not "}us`);
-
-        return isOurReply;
+        return this.isAuthoredBy(authorId) && this.isReply;
     }
 
     /**
-     * Calculates the number of image identifier contained within Discord message content.
-     *
-     * @returns {number}
+     * @returns {ImageIdStats} Details on the number of image attachments and image identifiers
      */
-    get imageIdentifierCount() {
-        return [...this.#discordJsMessage.content.matchAll(this.#MESSAGE_ID_VALIDATING_REGEXP)].length;
-    }
-
-    /**
-     * Calculates the number of distinct emoji contained within the Discord message content.
-     *
-     * @returns {number}
-     */
-    get emojiCount() {
-        return numberOfEmojiContained(this.#discordJsMessage.content);
-    }
-
-    /**
-     * Calculates the sum of the number of: image identifiers and, emoji
-     *
-     * @returns {number}
-     */
-    get identifierCount() {
-        return this.imageIdentifierCount + this.emojiCount;
-    }
-
-    /**
-     *  Calculates and returns the number of image attachments referenced by this message.
-     *
-     * @returns {number}
-     */
-    get imageAttachmentCount() {
-        return [...this.#discordJsMessage.attachments.values()]
-            .map(v => v.contentType)
-            .filter(isImageMediaType)
-            .length;
-    }
-
-    /**
-     * @returns {MessageImageInfo} Details on the number of image attachments and image identifiers
-     */
-    get imageInfo() {
-        return this.#imageInfo = this.#imageInfo ||
-            this.#factory.createMessageImageInfo(this.imageAttachmentCount, this.emojiCount, this.imageIdentifierCount);
+    get imageIdStats() {
+        return this.#imageIdStats;
     };
+
+    toString() {
+        return `message(id=${this.id}, content=${this.content}, channel=${this.channel}, isReply=${this.isReply}, isAuthorHuman=${this.isAuthorHuman}, referencedMessageId=${this?.referencedMessageId}, imageIdStats=${this.imageIdStats})`;
+    }
+
+    toIdString() {
+        return `message(id=${this.id}, ...)`;
+    }
 
     /**
      * @param {Factory} factory
      * @param {Message} discordJsMessage the discord.js sourced discordJsMessage
-     * @param {Logger} [logger]
      */
-    constructor(factory, discordJsMessage, logger) {
-        this.#factory = factory;
+    constructor(factory, discordJsMessage) {
         this.#discordJsMessage = discordJsMessage;
-        this.#logger = logger;
+
+        const content = discordJsMessage.content;
+
+        const customEmojiMatches = [...content.matchAll(this.#CUSTOM_EMOJI_REGEX)];
+        const sansCustomEmoji = content.replaceAll(this.#CUSTOM_EMOJI_REGEX, "");
+        console.debug(`customEmoji sansCustomEmoji=${sansCustomEmoji}`);
+
+        const numberOfEmoji = numberOfEmojiContained(sansCustomEmoji);
+
+        const idMatches = [...content.matchAll(this.#MESSAGE_ID_VALIDATING_REGEXP)];
+
+        customEmojiMatches?.forEach(match => {
+            console.debug(`customEmoji match=${match[0]}`);
+            console.debug(`customEmoji name=${match[2]}`);
+            console.debug(`customEmoji id=${match[3]}`);
+        });
+
+        this.#imageIdStats = factory.createImageIdStats(
+                [...discordJsMessage.attachments.values()]
+                    .map(v => v.contentType)
+                    .filter(isImageMediaType)
+                    .length,
+            numberOfEmoji,
+            customEmojiMatches.length,
+            idMatches.length
+        );
     }
 }
 

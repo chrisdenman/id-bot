@@ -2,37 +2,44 @@ import {IdBotMessage} from "./id-bot-message.js";
 import {Cache} from "./cache.js";
 import {IdBot} from "./id-bot.js";
 import {Logger} from "./logger.js";
-import {MessageImageInfo} from "./message-image-info.js";
+import {ImageIdStats} from "./image-id-stats.js";
 import {Client} from "discord.js";
 import {GatewayIntentBits} from "discord-api-types/v10";
 
 import {DiscordInterface} from "./discord-interface.js";
 import {Application} from "./application.js";
 
+const CLIENT_OPTIONS = {
+    intents: [
+        GatewayIntentBits.Guilds,
+        GatewayIntentBits.GuildMessages,
+        GatewayIntentBits.MessageContent
+    ]
+};
+
 class Factory {
 
-    createApplication = clientId => new Application(process, this.createIdBot(clientId));
+    static get CLIENT_OPTIONS() {
+        return CLIENT_OPTIONS;
+    }
 
-    createIdBotMessage = (discordJsMessage) =>
-        new IdBotMessage(this, discordJsMessage, this.createLogger("IdBotMessage"));
+    createApplication = clientId => new Application(process, this.createIdBot(clientId));
 
     createCache() {
         return new Cache(this.createLogger("MessageIdToReplyIdCache"));
     }
 
-    createMessageImageInfo(imageAttachmentCount, emojiCount, imageIdentifierCount) {
-        return new MessageImageInfo(imageAttachmentCount, emojiCount, imageIdentifierCount);
-    }
-
-    createClient() {
-        return new Client({
-            intents: [
-                GatewayIntentBits.Guilds,
-                GatewayIntentBits.GuildMessages,
-                GatewayIntentBits.MessageContent
-            ]
-        });
-    }
+    /**
+     * @param {string} clientId
+     * @returns {DiscordInterface}
+     */
+    #createDiscordInterface = clientId =>
+        new DiscordInterface(
+            new Client(Factory.CLIENT_OPTIONS),
+            this,
+            this.createLogger(`DiscordInterface(clientId=${clientId})`),
+            clientId
+        );
 
     /**
      * @param {string} clientId
@@ -42,26 +49,35 @@ class Factory {
         new IdBot(
             this.createCache(),
             this.#createDiscordInterface(clientId),
-            this.createLogger("IdBot")
+            this.createLogger(`IdBot(${clientId})`)
         );
 
+    createTimeStamp() {
+        return new Date().getMilliseconds();
+    }
+
     /**
-     * @param {string} clientId
-     * @returns {DiscordInterface}
+     *
+     * @param discordJsMessage
+     * @returns {IdBotMessage}
      */
-    #createDiscordInterface = clientId =>
-        new DiscordInterface(
-            this.createClient(),
-            this,
-            this.createLogger(`DiscordInterface for ${clientId}`),
-            clientId
-        );
+    createIdBotMessage = discordJsMessage => new IdBotMessage(this, discordJsMessage);
 
     /**
-     * @param {string} [name]
+     * @param {string} [prefix]
      * @returns {Logger}
      */
-    createLogger = name => new Logger(console, name);
+    createLogger = prefix => new Logger(console, prefix);
+
+    /**
+     * @param {number} imageAttachmentCount
+     * @param {number} emojiCount
+     * @param {number} customEmojiCount
+     * @param {number} imageIdentifierCount
+     * @returns {ImageIdStats}
+     */
+    createImageIdStats = (imageAttachmentCount, emojiCount, customEmojiCount, imageIdentifierCount) =>
+        new ImageIdStats(imageAttachmentCount, emojiCount, customEmojiCount, imageIdentifierCount);
 }
 
 export {Factory};

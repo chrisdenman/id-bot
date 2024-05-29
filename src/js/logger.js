@@ -5,18 +5,18 @@ class Logger {
     /**
      * @type {string}
      */
-    #name;
+    #prefix;
 
     /**
      * @param {Console} console - the console to log to
-     * @param {string} [name] - an optional logger name
+     * @param {string} [prefix] - an optional logger prefix
      */
-    constructor(console, name) {
+    constructor(console, prefix) {
         this.#console = console;
-        this.#name = name;
+        this.#prefix = prefix;
     }
 
-    #format = message => `${this.#name ? (this.#name + ":") : ""} ${message}`;
+    #format = message => `${this.#prefix ? (this.#prefix + ": ") : ""}${message}`;
 
     /**
      * @param {string} message
@@ -35,8 +35,12 @@ class Logger {
 
     /**
      * @param {string} message
+     * @param {*} error
      */
-    error = message => this.#console.error(this.#format(message));
+    error = ((message, error) => {
+        this.#console.error(this.#format(message));
+        this.#console.error(error);
+    });
 
     /**
      * @param {string} message

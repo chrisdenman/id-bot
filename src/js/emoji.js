@@ -1,6 +1,5 @@
 const EMOJI_CODE_POINTS = [
-    "\u{0023}", "\u{002A}", "\u{0030}", "\u{0031}", "\u{0032}", "\u{0033}", "\u{0034}", "\u{0035}", "\u{0036}",
-    "\u{0037}", "\u{0038}", "\u{0039}", "\u{00A9}", "\u{00AE}", "\u{203C}", "\u{2049}", "\u{2122}", "\u{2139}",
+    "\u{203C}", "\u{2049}", "\u{2122}", "\u{2139}",
     "\u{2194}", "\u{2195}", "\u{2196}", "\u{2197}", "\u{2198}", "\u{2199}", "\u{21A9}", "\u{21AA}", "\u{231A}",
     "\u{231B}", "\u{2328}", "\u{23CF}", "\u{23E9}", "\u{23EA}", "\u{23EB}", "\u{23EC}", "\u{23ED}", "\u{23EE}",
     "\u{23EF}", "\u{23F0}", "\u{23F1}", "\u{23F2}", "\u{23F3}", "\u{23F8}", "\u{23F9}", "\u{23FA}", "\u{24C2}",
@@ -163,7 +162,9 @@ const EMOJI_CODE_POINTS = [
 const numberOfEmojiContained = text => {
     let count = 0;
     for (let char of text) {
-        if (EMOJI_CODE_POINTS.includes(char)) count++;
+        if (EMOJI_CODE_POINTS.includes(char)) {
+            count++;
+        }
     }
 
     return count;
