@@ -1,4 +1,4 @@
-# [ID Bot](https://github.com/chrisdenman/id-bot) 0.0.1
+# [ID Bot](https://github.com/chrisdenman/id-bot) 0.0.2
                                                                 
 ![An stylised image of the project's logo formed of a lower-case i cursively joining a capitalised D](res/img/id-gum-logo.png)
 
@@ -67,3 +67,4 @@ The [Unlicense](https://unlicense.org/)
 - [stackoverflow](https://stackoverflow.com/)
 - [Unicode® Technical Standard #51 : Unicode Emoji](https://www.unicode.org/reports/tr51/)
 - [The OAuth 2.0 Authorization Framework](https://www.rfc-editor.org/rfc/rfc6749)
+- [regular expressions 101](https://regex101.com)

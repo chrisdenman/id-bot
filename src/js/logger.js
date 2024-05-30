@@ -3,7 +3,7 @@ class Logger {
     #console;
 
     /**
-     * @type {string}
+     * @type string
      */
     #prefix;
 
@@ -35,11 +35,13 @@ class Logger {
 
     /**
      * @param {string} message
-     * @param {*} error
+     * @param {*} [error]
      */
     error = ((message, error) => {
         this.#console.error(this.#format(message));
-        this.#console.error(error);
+        if (error) {
+            this.#console.error(error);
+        }
     });
 
     /**

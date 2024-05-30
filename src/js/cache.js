@@ -1,118 +1,103 @@
-class CacheValueWrapper {
-
-    /**
-     * @type {Factory}
-     */
-    #factory;
-
-    /**
-     * @type {number}
-     */
-    #createdAt;
-
-    /**
-     * @type {number}
-     */
-    #addedAt;
-
-    /**
-     * @type {number}
-     */
-    #accessedAt;
-
-    /**
-     * @type {number}
-     */
-    #updatedAt;
-
-    /**
-     * @type {Any}
-     */
-    #key;
-
-    /**
-     * @type {Any}
-     */
-    #value;
-
-    /**
-     *
-     * @param  {Factory} factory
-     * @param  {Any} key
-     * @param  {Any} [value]
-     */
-    constructor(factory, key, value) {
-        this.#factory = factory;
-        this.#key = key;
-        this.#value = value;
-        
-        this.#createdAt = this.#factory.createTimeStamp();
-    }
-
-    get key() {
-        return this.#key;
-    }
-
-    get value() {
-        return this.#value;
-    }
-
-    get createdAt() {
-        return this.#createdAt;
-    }
-
-    get addedAt() {
-        return this.#addedAt;
-    }
-
-    get accessedAt() {
-        return this.#accessedAt;
-    }
-
-    get updatedAt() {
-        return this.#updatedAt;
-    }
-}
+import {CacheMeta} from "./cache-meta.js";
 
 class Cache {
 
     /**
-     * @type Map
+     * @type Factory
      */
-    #map;
+    #factory;
 
     /**
-     * @type {Logger}
+     * @type Logger
      */
     #logger;
 
-    constructor(logger) {
-        this.#map = new Map();
+    /**
+     * @type {Map<Any, Any>}
+     */
+    #keyToValue;
+
+    /**
+     * @type {Map<Any, CacheMeta>}
+     */
+    #keyToMetaData;
+
+    /**
+     *
+     * @param {Factory} factory
+     * @param {Logger} logger
+     */
+    constructor(factory, logger) {
+        this.#factory = factory;
         this.#logger = logger;
+
+        this.#keyToValue = new Map();
+        this.#keyToMetaData = new Map();
     }
 
+    /**
+     * @param {*} key
+     * @param {*} value
+     */
     set(key, value) {
-        this.#map.set(key, value);
-        this.#logger.debug(`+[${key}->${value}] : ${this.#map.size} values cached.`);
+        const isUpdate = this.#keyToValue.has(key);
+        const meta = isUpdate ?
+            this.#factory.withUpdate(value, this.#keyToMetaData.get(key)) :
+            this.#factory.createCacheMeta(key, value);
+        this.#keyToMetaData.set(key, meta);
+        this.#keyToValue.set(key, value);
+        this.#logger.debug(`${isUpdate ? "=" : ">"}[${key}->${value}] : ${this.#keyToValue.size} values cached.`);
     }
 
+    /**
+     * @param {*} key
+     * @returns {undefined|Any}
+     */
     get(key) {
-        if (this.#map.has(key)) {
-            const value = this.#map.get(key);
-            this.#logger.debug(`=[${key}->${value}]`);
+        if (this.#keyToValue.has(key)) {
+            const value = this.#keyToValue.get(key);
+
+            this.#keyToMetaData.set(key, this.#factory.withCacheAccess(this.#keyToMetaData.get(key)));
+            this.#logger.debug(`<[${key}]`);
 
             return value;
+        } else {
+            this.#logger.debug(`?[${key}]`);
+
+            return undefined;
         }
     }
 
-    remove(key){
-        const deleted = this.#map.delete(key);
+    /**
+     * @param {*} key
+     * @returns {CacheMeta}
+     */
+    getMeta(key) {
+        return this.#keyToValue.has(key) ? this.#keyToMetaData.get(key) : undefined;
+    }
+
+    /**
+     * @returns {IterableIterator<CacheMeta>}
+     */
+    get getMetas() {
+        return this.#keyToMetaData.values();
+    }
+
+    /**
+     * @param {*} key
+     * @returns {boolean} true iff. the item was removed
+     */
+    remove(key) {
+        this.#keyToMetaData.delete(key);
+        const dataDeleted = this.#keyToValue.delete(key);
+
         this.#logger.debug(
-            deleted ? this.#logger.debug(`-[${key}->?] : ${this.#map.size} values cached.`) : `unknown key ${key}`
+            dataDeleted ?
+                this.#logger.debug(`-[${key}] : ${this.#keyToValue.size} values cached.`) : `unknown key ${key}`
         );
-        
-        return deleted;
+
+        return dataDeleted;
     }
 }
 
-export {Cache};
+export {Cache, CacheMeta};

@@ -13,22 +13,22 @@ import {MessageType} from "discord-api-types/v10";
 class IdBotMessage {
 
     /**
-     * @type {ImageIdStats}
+     * @type ImageIdStats
      */
     #imageIdStats;
 
     /**
-     * @type {RegExp}
+     * @type RegExp
      */
     #MESSAGE_ID_VALIDATING_REGEXP = /(?<=(^|\s|\W)ID:\s*)(\w+)(?!\WID:)/svg;
 
     /**
-     * @type {RegExp}
+     * @type RegExp
      */
     #CUSTOM_EMOJI_REGEX = /<(a)?:(?<name>\w+):(?<id>\d+)>/g;
 
     /**
-     *@type {Message}
+     * @type Message
      */
     #discordJsMessage;
 
@@ -91,10 +91,16 @@ class IdBotMessage {
         return this.#imageIdStats;
     };
 
+    /**
+     * @returns {string}
+     */
     toString() {
         return `message(id=${this.id}, content=${this.content}, channel=${this.channel}, isReply=${this.isReply}, isAuthorHuman=${this.isAuthorHuman}, referencedMessageId=${this?.referencedMessageId}, imageIdStats=${this.imageIdStats})`;
     }
 
+    /**
+     * @returns {string}
+     */
     toIdString() {
         return `message(id=${this.id}, ...)`;
     }
@@ -107,28 +113,20 @@ class IdBotMessage {
         this.#discordJsMessage = discordJsMessage;
 
         const content = discordJsMessage.content;
+        const contentCustomEmojiMatches = [...content.matchAll(this.#CUSTOM_EMOJI_REGEX)];
 
-        const customEmojiMatches = [...content.matchAll(this.#CUSTOM_EMOJI_REGEX)];
-        const sansCustomEmoji = content.replaceAll(this.#CUSTOM_EMOJI_REGEX, "");
-        console.debug(`customEmoji sansCustomEmoji=${sansCustomEmoji}`);
-
-        const numberOfEmoji = numberOfEmojiContained(sansCustomEmoji);
+        const contentStrippedOfCustomEmoji = content.replaceAll(this.#CUSTOM_EMOJI_REGEX, "");
+        const numberOfEmoji = numberOfEmojiContained(contentStrippedOfCustomEmoji);
 
         const idMatches = [...content.matchAll(this.#MESSAGE_ID_VALIDATING_REGEXP)];
 
-        customEmojiMatches?.forEach(match => {
-            console.debug(`customEmoji match=${match[0]}`);
-            console.debug(`customEmoji name=${match[2]}`);
-            console.debug(`customEmoji id=${match[3]}`);
-        });
-
         this.#imageIdStats = factory.createImageIdStats(
-                [...discordJsMessage.attachments.values()]
-                    .map(v => v.contentType)
-                    .filter(isImageMediaType)
-                    .length,
+            [...discordJsMessage.attachments.values()]
+                .map(v => v.contentType)
+                .filter(isImageMediaType)
+                .length,
             numberOfEmoji,
-            customEmojiMatches.length,
+            contentCustomEmojiMatches.length,
             idMatches.length
         );
     }

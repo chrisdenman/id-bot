@@ -9,17 +9,17 @@ import {MESSAGE_HAS_MORE_IDS_THAN_IMAGES, MESSAGE_HAS_MORE_IMAGES_THAN_IDS} from
 class IdBot {
 
     /**
-     * @type {DiscordInterface}
+     * @type DiscordInterface
      */
     #discordInterface;
 
     /**
-     * @type {Cache}
+     * @type Cache
      */
     #cache;
 
     /**
-     * @type {Logger}
+     * @type Logger
      */
     #logger;
 
@@ -94,7 +94,7 @@ class IdBot {
         this.#logger.debug(`updated ${updatedMessage}`);
 
         if (updatedMessage.isAuthorHuman) {
-            this.#logger.debug(`${updatedMessage.toIdString()} updated by a mortal`);
+            this.#logger.debug(`${updatedMessage.toIdString()} author is human`);
             const imageIdStats = updatedMessage.imageIdStats;
 
             if (!imageIdStats.isCorrectlyIdentified) {

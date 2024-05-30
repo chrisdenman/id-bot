@@ -1,11 +1,11 @@
 import {IdBotMessage} from "./id-bot-message.js";
 import {Cache} from "./cache.js";
+import {CacheMeta} from "./cache-meta.js";
 import {IdBot} from "./id-bot.js";
 import {Logger} from "./logger.js";
 import {ImageIdStats} from "./image-id-stats.js";
 import {Client} from "discord.js";
 import {GatewayIntentBits} from "discord-api-types/v10";
-
 import {DiscordInterface} from "./discord-interface.js";
 import {Application} from "./application.js";
 
@@ -19,14 +19,14 @@ const CLIENT_OPTIONS = {
 
 class Factory {
 
-    static get CLIENT_OPTIONS() {
+    static get #CLIENT_OPTIONS() {
         return CLIENT_OPTIONS;
     }
 
     createApplication = clientId => new Application(process, this.createIdBot(clientId));
 
     createCache() {
-        return new Cache(this.createLogger("MessageIdToReplyIdCache"));
+        return new Cache(this, this.createLogger("MessageIdToReplyIdCache"));
     }
 
     /**
@@ -35,7 +35,7 @@ class Factory {
      */
     #createDiscordInterface = clientId =>
         new DiscordInterface(
-            new Client(Factory.CLIENT_OPTIONS),
+            new Client(Factory.#CLIENT_OPTIONS),
             this,
             this.createLogger(`DiscordInterface(clientId=${clientId})`),
             clientId
@@ -43,6 +43,7 @@ class Factory {
 
     /**
      * @param {string} clientId
+     *
      * @returns {IdBot}
      */
     createIdBot = clientId =>
@@ -52,8 +53,8 @@ class Factory {
             this.createLogger(`IdBot(${clientId})`)
         );
 
-    createTimeStamp() {
-        return new Date().getMilliseconds();
+    get utcTimeStampNow() {
+        return new Date().getUTCMilliseconds();
     }
 
     /**
@@ -70,13 +71,44 @@ class Factory {
     createLogger = prefix => new Logger(console, prefix);
 
     /**
+     *
+     * @param {*} key
+     * @param {*} [value]
+     *
+     * @returns {CacheMeta}
+     */
+    createCacheMeta = (key, value) => new CacheMeta(key, value, this.utcTimeStampNow);
+    
+    withCacheAccess = cacheMeta => new CacheMeta(
+        cacheMeta.key,
+        cacheMeta.value,
+        cacheMeta.createdAt,
+        this.utcTimeStampNow,
+        cacheMeta.updatedAt
+    );
+
+    withUpdate = (value, cacheMeta) => new CacheMeta(
+        cacheMeta.key,
+        value,
+        cacheMeta.createdAt,
+        cacheMeta.lastAccessedAt,
+        this.utcTimeStampNow
+    );
+
+    /**
      * @param {number} imageAttachmentCount
      * @param {number} emojiCount
      * @param {number} customEmojiCount
      * @param {number} imageIdentifierCount
+     *
      * @returns {ImageIdStats}
      */
-    createImageIdStats = (imageAttachmentCount, emojiCount, customEmojiCount, imageIdentifierCount) =>
+    createImageIdStats = (
+        imageAttachmentCount,
+        emojiCount,
+        customEmojiCount,
+        imageIdentifierCount
+    ) =>
         new ImageIdStats(imageAttachmentCount, emojiCount, customEmojiCount, imageIdentifierCount);
 }
 

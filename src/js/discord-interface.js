@@ -10,42 +10,42 @@ import {Events} from "discord.js";
 class DiscordInterface {
 
     /**
-     * @type {Logger}
+     * @type Logger
      */
     _logger;
 
     /**
-     * @type {string}
+     * @type string
      */
     #clientId;
 
     /**
-     * @type {Factory}
+     * @type Factory
      */
     #factory;
 
     /**
-     * @type
+     * @type { (client:Client) => void } - callback executed when the client has logged-in
      */
     #onClientReadyHandler;
 
     /**
-     * @type
+     * @type { (message:Message) => void } - callback executed in respect of a message being created
      */
     #onMessageCreateHandler;
 
     /**
-     * @type
+     * @type { (message:Message) => void } - callback executed in respect of a message being deleted
      */
     #onMessageDeleteHandler;
 
     /**
-     * @type
+     * @type { (existingMessage:Message, updatedMessage:Message) => void } - callback executed in respect of a message being updated
      */
     #onMessageUpdateHandler;
 
     /**
-     * @type {Client}
+     * @type Client
      */
     _client;
 
@@ -85,10 +85,6 @@ class DiscordInterface {
         );
     }
 
-    get clientId() {
-        return this.#clientId;
-    }
-
     async _onMessageDelete(message) {
         this?.#onMessageDeleteHandler(this._createIdBotMessage(message));
     }
@@ -125,7 +121,7 @@ class DiscordInterface {
      * @param {string} token
      */
     login(token) {
-        this._client.login(token).catch(e => this._logger.error(e));
+        this._client.login(token).catch(e => this._logger.error("Unable to log-in", e));
     }
 
     close() {
