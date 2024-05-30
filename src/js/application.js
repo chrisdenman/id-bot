@@ -8,6 +8,9 @@ class Application {
 
     #process;
 
+    /**
+     * @type IdBot
+     */
     #idBot;
 
     /**
