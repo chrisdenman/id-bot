@@ -93,7 +93,7 @@ class DiscordInterface {
      * @param {IdBotMessage} message
      * @returns {boolean}
      */
-    isSelfAuthored = (message) => message.isReplyBy(this.#clientId);
+    isOurReply = message => message.isReplyBy(this.#clientId);
 
     /**
      * @param {IdBotMessage} received

@@ -8,6 +8,7 @@ import {Client} from "discord.js";
 import {GatewayIntentBits} from "discord-api-types/v10";
 import {DiscordInterface} from "./discord-interface.js";
 import {Application} from "./application.js";
+import {MaxStaleCacheManager} from "./max-stale-cache-manager.js";
 
 const CLIENT_OPTIONS = {
     intents: [
@@ -23,14 +24,46 @@ class Factory {
         return CLIENT_OPTIONS;
     }
 
-    createApplication = clientId => new Application(process, this.createIdBot(clientId));
+    /**
+     *
+     * @param {Cache} cache
+     * @param {number} tickIntervalDurationMilliSeconds
+     * @param {number} maxStaleLifetimeMilliSeconds
+     * @returns {MaxStaleCacheManager}
+     */
+    createCacheExpirator(cache, tickIntervalDurationMilliSeconds = 100, maxStaleLifetimeMilliSeconds = undefined) {
+        return new MaxStaleCacheManager(
+            cache, this.createLogger("MaxStaleCacheManager"),
+            this,
+            tickIntervalDurationMilliSeconds,
+            maxStaleLifetimeMilliSeconds
+        );
+    }
 
+    /**
+     *
+     * @param {string} clientId
+     * @param {number} tickIntervalDurationMilliSeconds
+     * @param {number} maxStaleCacheLifetimeMilliSeconds
+     *
+     * @returns {Application}
+     */
+    createApplication = (clientId, tickIntervalDurationMilliSeconds, maxStaleCacheLifetimeMilliSeconds) =>
+        new Application(process,
+            this.createIdBot(clientId, tickIntervalDurationMilliSeconds, maxStaleCacheLifetimeMilliSeconds)
+        );
+
+    /**
+     *
+     * @returns {Cache}
+     */
     createCache() {
         return new Cache(this, this.createLogger("MessageIdToReplyIdCache"));
     }
 
     /**
      * @param {string} clientId
+     *
      * @returns {DiscordInterface}
      */
     #createDiscordInterface = clientId =>
@@ -43,16 +76,26 @@ class Factory {
 
     /**
      * @param {string} clientId
+     * @param tickIntervalDurationMilliSeconds
+     * @param {number} maxStaleLifetimeMilliSeconds
      *
      * @returns {IdBot}
      */
-    createIdBot = clientId =>
-        new IdBot(
-            this.createCache(),
+    createIdBot = (clientId, tickIntervalDurationMilliSeconds, maxStaleLifetimeMilliSeconds) => {
+        const cache = this.createCache();
+
+        return new IdBot(
+            cache,
+            this.createCacheExpirator(cache, tickIntervalDurationMilliSeconds, maxStaleLifetimeMilliSeconds),
             this.#createDiscordInterface(clientId),
             this.createLogger(`IdBot(${clientId})`)
         );
+    };
 
+    /**
+     *
+     * @returns {number}
+     */
     get utcTimeStampNow() {
         return new Date().getUTCMilliseconds();
     }
@@ -71,25 +114,25 @@ class Factory {
     createLogger = prefix => new Logger(console, prefix);
 
     /**
-     *
      * @param {*} key
-     * @param {*} [value]
      *
      * @returns {CacheMeta}
      */
-    createCacheMeta = (key, value) => new CacheMeta(key, value, this.utcTimeStampNow);
+    createCacheMeta = key => {
+        const now = this.utcTimeStampNow;
+        
+        return new CacheMeta(key, now, now);
+    };
     
     withCacheAccess = cacheMeta => new CacheMeta(
         cacheMeta.key,
-        cacheMeta.value,
         cacheMeta.createdAt,
         this.utcTimeStampNow,
-        cacheMeta.updatedAt
+        cacheMeta.lastUpdatedAt
     );
 
-    withUpdate = (value, cacheMeta) => new CacheMeta(
+    withUpdate = cacheMeta => new CacheMeta(
         cacheMeta.key,
-        value,
         cacheMeta.createdAt,
         cacheMeta.lastAccessedAt,
         this.utcTimeStampNow

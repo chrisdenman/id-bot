@@ -13,31 +13,24 @@ class CacheMeta {
     /**
      * @type number
      */
-    #updatedAt;
+    #lastUpdatedAt;
 
     /**
-     * @type Any
+     * @type *
      */
     #key;
 
     /**
-     * @type Any
-     */
-    #value;
-
-    /**
      * @param  {*} key
-     * @param  {*} value
      * @param  {number} createdAt
      * @param  {number} lastAccessedAt
-     * @param  {number} updatedAt
+     * @param  {number} lastUpdatedAt
      */
-    constructor(key, value, createdAt, lastAccessedAt = undefined, updatedAt = undefined) {
+    constructor(key, createdAt, lastAccessedAt = undefined, lastUpdatedAt = undefined) {
         this.#key = key;
-        this.#value = value;
         this.#createdAt = createdAt;
         this.#lastAccessedAt = lastAccessedAt;
-        this.#updatedAt = updatedAt;
+        this.#lastUpdatedAt = lastUpdatedAt;
     }
 
     /**
@@ -45,13 +38,6 @@ class CacheMeta {
      */
     get key() {
         return this.#key;
-    }
-
-    /**
-     * @returns {*}
-     */
-    get value() {
-        return this.#value;
     }
 
     /**
@@ -71,8 +57,12 @@ class CacheMeta {
     /**
      * @returns {number} the UTC timestamp at which this cache mapping was last updated (had its value changed)
      */
-    get updatedAt() {
-        return this.#updatedAt;
+    get lastUpdatedAt() {
+        return this.#lastUpdatedAt;
+    }
+
+    toString() {
+        return `CacheMeta(key=${this.#key} createdAt=${this.#createdAt} #lastAccessedAt=${this.#lastAccessedAt} lastUpdatedAt=${this.#lastUpdatedAt})`;
     }
 }
 

@@ -59,15 +59,6 @@ class ImageIdStats {
     }
 
     /**
-     * Returns true iff. `imageIdentifierCount > entitiesRequiringIdentificationCount`
-     *
-     * @returns {boolean} `true` iff. the message is over-identified
-     */
-    get isOverIdentified() {
-        return this.#imageIdentifierCount > this.#entitiesRequiringIdentificationCount;
-    }
-
-    /**
      * The number of Unicode emoji defined.
      *
      * @returns {number}

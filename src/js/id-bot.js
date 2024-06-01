@@ -19,6 +19,11 @@ class IdBot {
     #cache;
 
     /**
+     * @type MaxStaleCacheManager
+     */
+    #maxStaleCacheManager;
+
+    /**
      * @type Logger
      */
     #logger;
@@ -27,9 +32,9 @@ class IdBot {
      * @param {ImageIdStats} imageIdStats
      * @returns {string}
      */
-    #reminderMessage(imageIdStats) {
-        return imageIdStats.isUnderIdentified ? MESSAGE_HAS_MORE_IMAGES_THAN_IDS : MESSAGE_HAS_MORE_IDS_THAN_IMAGES;
-    }
+    #reminderMessage = imageIdStats => imageIdStats.isUnderIdentified ?
+        MESSAGE_HAS_MORE_IMAGES_THAN_IDS :
+        MESSAGE_HAS_MORE_IDS_THAN_IMAGES;
 
     /**
      * @param {Channel} channel
@@ -57,10 +62,19 @@ class IdBot {
 
     #onClientReady() {
         this.#logger.info(`Ready`);
+        this.#maxStaleCacheManager.start();
     }
 
     /**
+     * For every created event for message 'm':
+     *
+     *  1. if it is human authored and incorrectly identified, we post a reminder reply message
+     *  2. else, if it's a self-authored reply, we cache: m.referencedMessageId -> m.id
+     *
+     * Can we store arbitrary data in a message?
+     *
      * @param {IdBotMessage} message
+     *
      * @returns {Promise<void>}
      */
     #onMessageCreate = async message => {
@@ -76,7 +90,7 @@ class IdBot {
                 this.#discordInterface.replyTo(message, reminderMessage);
             }
         } else {
-            if (this.#discordInterface.isSelfAuthored(message)) {
+            if (this.#discordInterface.isOurReply(message)) {
                 const referencedMessageId = message.referencedMessageId;
                 this.#logger.debug(`${message.toIdString()} is our new reminder reply to ${referencedMessageId}."`);
 
@@ -122,19 +136,24 @@ class IdBot {
 
     /**
      * @param {Cache} cache
+     * @param {MaxStaleCacheManager} maxStaleCacheManager
      * @param {DiscordInterface} discordInterface
      * @param {Logger} logger
      */
-    constructor(cache, discordInterface, logger) {
+    constructor(
+        cache,
+        maxStaleCacheManager,
+        discordInterface,
+        logger
+    ) {
         this.#cache = cache;
-        this.#discordInterface = discordInterface;
-        this.#logger = logger;
-
-        this.#discordInterface
+        this.#maxStaleCacheManager = maxStaleCacheManager;
+        this.#discordInterface = discordInterface
             .setClientReadyHandler(this.#onClientReady.bind(this))
             .setMessageCreateHandler(this.#onMessageCreate.bind(this))
             .setMessageUpdateHandler(this.#onMessageUpdate.bind(this))
             .setMessageDeleteHandler(this.#onMessageDelete.bind(this));
+        this.#logger = logger;
     }
 
     /**
@@ -146,6 +165,7 @@ class IdBot {
 
     close() {
         this.#discordInterface.close();
+        this.#maxStaleCacheManager.stop();
     }
 }
 

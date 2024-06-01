@@ -13,12 +13,12 @@ class Cache {
     #logger;
 
     /**
-     * @type {Map<Any, Any>}
+     * @type {Map<*, *>}
      */
     #keyToValue;
 
     /**
-     * @type {Map<Any, CacheMeta>}
+     * @type {Map<*, CacheMeta>}
      */
     #keyToMetaData;
 
@@ -37,20 +37,7 @@ class Cache {
 
     /**
      * @param {*} key
-     * @param {*} value
-     */
-    set(key, value) {
-        const isUpdate = this.#keyToValue.has(key);
-        const meta = isUpdate ?
-            this.#factory.withUpdate(value, this.#keyToMetaData.get(key)) :
-            this.#factory.createCacheMeta(key, value);
-        this.#keyToMetaData.set(key, meta);
-        this.#keyToValue.set(key, value);
-        this.#logger.debug(`${isUpdate ? "=" : ">"}[${key}->${value}] : ${this.#keyToValue.size} values cached.`);
-    }
-
-    /**
-     * @param {*} key
+     *
      * @returns {undefined|Any}
      */
     get(key) {
@@ -70,6 +57,23 @@ class Cache {
 
     /**
      * @param {*} key
+     * @param {*} value
+     */
+    set(key, value) {
+        const isUpdate = this.#keyToValue.has(key);
+        const meta = isUpdate ?
+            this.#factory.withUpdate(this.#keyToMetaData.get(key)) :
+            this.#factory.createCacheMeta(key);
+
+        this.#keyToMetaData.set(key, meta);
+        this.#keyToValue.set(key, value);
+
+        this.#logger.debug(`${isUpdate ? "=" : ">"}[${key}->${value}] : ${this.#keyToValue.size} values cached.`);
+    }
+
+
+    /**
+     * @param {*} key
      * @returns {CacheMeta}
      */
     getMeta(key) {
@@ -77,10 +81,13 @@ class Cache {
     }
 
     /**
-     * @returns {IterableIterator<CacheMeta>}
+     * @returns {Iterator<CacheMeta>}
      */
-    get getMetas() {
-        return this.#keyToMetaData.values();
+    get metaData() {
+        return Array
+            .from(this.#keyToMetaData.values())
+            .sort((e0, e1) => e0.lastAccessedAt - e1.lastAccessedAt)
+            .values();
     }
 
     /**
@@ -97,6 +104,10 @@ class Cache {
         );
 
         return dataDeleted;
+    }
+
+    toString() {
+        return `Cache(ktv=${this.#keyToValue}, ktm=${this.#keyToMetaData}, )`;
     }
 }
 

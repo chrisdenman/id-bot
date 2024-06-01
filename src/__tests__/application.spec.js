@@ -69,7 +69,20 @@ const createIdBotReply = function (userMessage, replyContent) {
 };
 
 describe("Application startup and shutdown", () => {
-    let factory, process, client, discordInterfaceHarness, idBot, application;
+    let factory, process, client, discordInterfaceHarness, cache, unboundCacheExpirator, idBot, application;
+
+    const withExpirator = (altCacheExpiratorProvider = undefined) => {
+        cache = factory.createCache();
+        unboundCacheExpirator = (altCacheExpiratorProvider && altCacheExpiratorProvider(cache)) ||
+            factory.createCacheExpirator(cache);
+        idBot = new IdBot(
+            cache,
+            unboundCacheExpirator,
+            discordInterfaceHarness,
+            new Logger(console, `IdBot(${CLIENT_ID})`)
+        );
+        application = new Application(process, idBot);
+    };
 
     beforeEach(() => {
         factory = new Factory();
@@ -88,32 +101,18 @@ describe("Application startup and shutdown", () => {
             factory,
             factory.createLogger(`DiscordInterface(${CLIENT_ID})`),
             CLIENT_ID);
-        idBot = new IdBot(factory.createCache(), discordInterfaceHarness, new Logger(console, `IdBot(${CLIENT_ID})`));
-        application = new Application(process, idBot);
+
+        withExpirator();
     });
 
-    // it("That  failures to login are resolved by logging them and rethrowing.", () => {
-    //     factory = new Factory();
-    //     process = {on: vi.fn(), exit: vi.fn()};
-    //     client = {once: vi.fn(), on: vi.fn(), login: vi.fn().mockImplementationOnce(REJECTS_TO)};
-    //     discordInterfaceHarness = new DiscordInterfaceHarness(
-    //         client,
-    //         factory,
-    //         factory.createLogger(`DiscordInterface for ${CLIENT_ID}`),
-    //         CLIENT_ID);
-    //     idBot = new IdBot(factory.createCache(), discordInterfaceHarness, new Logger(console, "IdBot"));
-    //     let unhandledErrorCaught = false;
-    //     try {
-    //         new Application(process, idBot).start("");
-    //     } catch(e) {
-    //         unhandledErrorCaught = true;
-    //     }
-    //     expect(unhandledErrorCaught).toBe(true);
-    // });
+    afterEach(() => {
+        application.stop();
+        vi.restoreAllMocks();
+    });
 
     it("That messages authored by other bots are ignored even if they contain attachments that could be prompted in respect of.", () => {
         application.start(TOKEN);
-        discordInterfaceHarness.onClientReady();        
+        discordInterfaceHarness.onClientReady();
 
         const discordJsMessage = createDiscordJsMessage(CONTENT_EMPTY, ["image/png"], AUTHOR_ID__NOT_US, MessageType.Default, undefined, true);
         discordInterfaceHarness.onMessageCreate(discordJsMessage);
@@ -206,6 +205,43 @@ describe("Application startup and shutdown", () => {
                     });
             }
         )
+    );
+
+    describe(
+        "That quickly culling cache entries means ",
+        () => {
+            it(
+                `Something`,
+                async () => {
+                    vi.useRealTimers();
+
+                    withExpirator(c => factory.createCacheExpirator(c, 10, 1));
+
+                    application.start(TOKEN);
+                    discordInterfaceHarness.onClientReady();
+
+                    const userMessage = createDiscordJsMessage("ID: Something", []);
+                    discordInterfaceHarness.onMessageCreate(userMessage);
+
+                    // Discord.js creation event for our previous reply, idBot caches referenced message to idBot reply if the message is not correctly identified
+                    discordInterfaceHarness.onMessageCreate(createIdBotReply(userMessage, OVER_DESCRIBED_REMINDER_MESSAGE));
+                    const updatedUserMessage = createDiscordJsMessage(
+                        "Blah blah blah.",
+                        [],
+                        AUTHOR_ID__NOT_US,
+                        MessageType.Default,
+                        undefined,
+                        false,
+                        userMessage.id
+                    );
+                    await new Promise(resolve => setTimeout(resolve, 2000));
+                    discordInterfaceHarness.onMessageUpdate(userMessage, updatedUserMessage);
+                    expect(updatedUserMessage.channel.messages.delete).not.toHaveBeenCalled();
+                    
+                    application.stop();
+                }
+            );
+        }
     );
 
     it("That normal shutdown closes the IdBot instance and returns the correct process exit code", () => {

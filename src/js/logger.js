@@ -16,38 +16,38 @@ class Logger {
         this.#prefix = prefix;
     }
 
-    #format = message => `${this.#prefix ? (this.#prefix + ": ") : ""}${message}`;
+    #format = (message, level) => `${level ? (level + ":") : ":"}${this.#prefix ? (this.#prefix + ":") : ":"}${message}`;
 
     /**
-     * @param {string} message
+     * @param {*} message
      */
-    info = message => this.#console.info(this.#format(message));
+    info = message => this.#console.info(this.#format(message, "INFO"));
 
     /**
-     * @param {string} message
+     * @param {*} message
      */
-    log = message => this.#console.log(this.#format(message));
+    log = message => this.#console.log(this.#format(message, "log"));
 
     /**
-     * @param {string} message
+     * @param {*} message
      */
-    debug = message => this.#console.debug(this.#format(message));
+    debug = message => this.#console.debug(this.#format(message, "debug"));
 
     /**
-     * @param {string} message
+     * @param {*} message
      * @param {*} [error]
      */
     error = ((message, error) => {
-        this.#console.error(this.#format(message));
+        this.#console.error(this.#format(message, "ERROR"));
         if (error) {
             this.#console.error(error);
         }
     });
 
     /**
-     * @param {string} message
+     * @param {*} message
      */
-    warn = message => this.#console.warn(this.#format(message));
+    warn = message => this.#console.warn(this.#format(message, "WARN"));
 }
 
 export {Logger};

@@ -1,4 +1,4 @@
-# [ID Bot](https://github.com/chrisdenman/id-bot) 0.0.2
+# [ID Bot](https://github.com/chrisdenman/id-bot) 0.0.3
                                                                 
 ![An stylised image of the project's logo formed of a lower-case i cursively joining a capitalised D](res/img/id-gum-logo.png)
 
@@ -27,9 +27,17 @@ A working version of node is required (Tested on `v21.6.2`).
 - Test reports are located [here](build/tests/html/vitest.html).
 - Coverage reports are located [here](build/tests/coverage/index.html).
 
+`npm run check`
+- Runs: linting, auditing, testing. 
+
 ### Linting
 
 `npm run lint`
+
+### Package Auditing
+
+`npm run audit`
+
 
 ## Production Plugins
 

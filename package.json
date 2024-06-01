@@ -1,14 +1,16 @@
 {
   "name": "@ceilingcat/id-bot",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "A discord bot to remind users to tag uploaded images with identifiers.",
   "scripts": {
+    "lint": "eslint \"src/*/*.js\"",
+    "audit": "npm audit --registry=https://registry.npmjs.org",
+    "test": "vitest --coverage --config ./vitest.config.ts",
+    "check": "run-s lint audit test",
     "start": "run-s execute",
     "execute": "run-p auth-server id-bot",
-    "test": "vitest --coverage --config ./vitest.config.ts",
     "id-bot": "node src/js/node-starter.js",
-    "auth-server": "node src/js/auth-server.js",
-    "lint": "eslint \"src/*/*.js\""
+    "auth-server": "node src/js/auth-server.js"
   },
   "main": "build/src/js/id-bot.js",
   "type": "module",
