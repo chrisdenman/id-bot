@@ -104,6 +104,12 @@ class DiscordInterface {
         received.reply(content);
     }
 
+    update = (message, content) => message
+        .edit(content)
+        .then(updatedMessage => this._logger.log(`Updated ${message.id} to "${updatedMessage.content}"`))
+        .catch(e => this._logger.error(`could not delete reply with id=${message.id}`, e));
+
+
     /**
      * @param {Channel} channel
      * @param messageId
