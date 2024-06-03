@@ -110,6 +110,17 @@ describe("Application startup and shutdown", () => {
         vi.restoreAllMocks();
     });
 
+    it("That login errors as swallowed.", () => {
+        application.start(TOKEN);
+        client.login = vi.fn().mockImplementationOnce(() => {
+            console.log("WOT");
+            new Promise((_, error) => {
+                error("login failed");
+                throw new Error("logg-in failed");
+            });
+        });
+    });
+
     it("That messages authored by other bots are ignored even if they contain attachments that could be prompted in respect of.", () => {
         application.start(TOKEN);
         discordInterfaceHarness.onClientReady();
@@ -237,7 +248,7 @@ describe("Application startup and shutdown", () => {
                     await new Promise(resolve => setTimeout(resolve, 2000));
                     discordInterfaceHarness.onMessageUpdate(userMessage, updatedUserMessage);
                     expect(updatedUserMessage.channel.messages.delete).not.toHaveBeenCalled();
-                    
+
                     application.stop();
                 }
             );

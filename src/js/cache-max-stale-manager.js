@@ -1,4 +1,4 @@
-class MaxStaleCacheManager {
+class CacheMaxStaleManager {
 
     /**
      * @type {Cache}
@@ -98,5 +98,5 @@ class MaxStaleCacheManager {
 }
 
 export {
-    MaxStaleCacheManager
+    CacheMaxStaleManager
 };

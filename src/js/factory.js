@@ -8,7 +8,7 @@ import {Client} from "discord.js";
 import {GatewayIntentBits} from "discord-api-types/v10";
 import {DiscordInterface} from "./discord-interface.js";
 import {Application} from "./application.js";
-import {MaxStaleCacheManager} from "./max-stale-cache-manager.js";
+import {CacheMaxStaleManager} from "./cache-max-stale-manager.js";
 
 const CLIENT_OPTIONS = {
     intents: [
@@ -29,10 +29,10 @@ class Factory {
      * @param {Cache} cache
      * @param {number} tickIntervalDurationMilliSeconds
      * @param {number} maxStaleLifetimeMilliSeconds
-     * @returns {MaxStaleCacheManager}
+     * @returns {CacheMaxStaleManager}
      */
     createCacheExpirator(cache, tickIntervalDurationMilliSeconds = 100, maxStaleLifetimeMilliSeconds = undefined) {
-        return new MaxStaleCacheManager(
+        return new CacheMaxStaleManager(
             cache, this.createLogger("MaxStaleCacheManager"),
             this,
             tickIntervalDurationMilliSeconds,

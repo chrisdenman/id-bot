@@ -35,12 +35,12 @@ class Logger {
 
     /**
      * @param {*} message
-     * @param {*} [error]
+     * @param {Error} [error]
      */
     error = ((message, error) => {
         this.#console.error(this.#format(message, "ERROR"));
         if (error) {
-            this.#console.error(error);
+            this.#console.error(this.#format(error, "ERROR"));
         }
     });
 

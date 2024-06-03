@@ -20,7 +20,7 @@ class IdBotMessage {
     /**
      * @type RegExp
      */
-    #MESSAGE_ID_VALIDATING_REGEXP = /(?<=(^|\s|\W)ID:\s*)(\w+)(?!\WID:)/svg;
+    #MESSAGE_ID_REGEXP = /(?<=(^|\s|\W)ID:\s*)(\w+)(?!\WID:)/svg;
 
     /**
      * @type RegExp
@@ -41,6 +41,7 @@ class IdBotMessage {
     }
 
     get referencedMessageId() {
+        // noinspection JSUnresolvedReference
         return this.#discordJsMessage?.reference?.messageId;
     }
 
@@ -118,7 +119,7 @@ class IdBotMessage {
         const contentStrippedOfCustomEmoji = content.replaceAll(this.#CUSTOM_EMOJI_REGEX, "");
         const numberOfEmoji = numberOfEmojiContained(contentStrippedOfCustomEmoji);
 
-        const idMatches = [...content.matchAll(this.#MESSAGE_ID_VALIDATING_REGEXP)];
+        const idMatches = [...content.matchAll(this.#MESSAGE_ID_REGEXP)];
 
         this.#imageIdStats = factory.createImageIdStats(
             [...discordJsMessage.attachments.values()]

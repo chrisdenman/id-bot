@@ -6,114 +6,86 @@ import {Factory} from "../js/factory";
 const factory = new Factory();
 
 describe(
-    "Emoji character counting in message content",
+    "Emoji, custom-emoji and image-identifier counting..",
     () => [
-        ["", 0, 0],
-        [" ", 0, 0],
-        ["\u{0023}", 0, 0],
-        ["\u{0030}", 0, 0],
-        ["\u{0039}", 0, 0],
-        ["\u{00AE}", 0, 0],
-        ["🫸", 1, 0],
-        ["🫸🫸", 2, 0],
-        [" 🫸🫸", 2, 0],
-        ["🫸🫸 ", 2, 0],
-        [" 🫸🫸 ", 2, 0],
-        ["<:blah:345802398509358903485093>🫸", 1, 1],
-        ["<:name:1245079798410121307>", 0, 1],
-        ["<a:name:1245079798410121307>", 0, 1],
-        ["<:n:1245079798410121307>", 0, 1],
-        ["<a:n:1245079798410121307>", 0, 1],
-        ["<:name:1>", 0, 1],
-        ["<a:name:1>", 0, 1],
-        ["<:n:1>", 0, 1],
-        ["<a:n:1>", 0, 1],
-        ["<a:-:a>", 0, 0],
-        ["<a:n:a>", 0, 0],
-        ["<b:n:1>", 0, 0],
-        ["<ab:n:1>", 0, 0],
-        ["<ba:n:1>", 0, 0],
-        ["<::1245079798410121307>", 0, 0],
-        ["<a::1245079798410121307>", 0, 0],
-        ["<::1>", 0, 0],
-        ["<a::1>", 0, 0],
-        ["<:name:>", 0, 0],
-        ["<a:name:>", 0, 0],
-        ["<:n:>", 0, 0],
-        ["<a:n:>", 0, 0],
-        [":name:1245079798410121307>", 0, 0],
-        ["a:name:1245079798410121307>", 0, 0],
-        [":n:1245079798410121307>", 0, 0],
-        ["a:n:1245079798410121307>", 0, 0],
-        [":name:1>", 0, 0],
-        ["a:name:1>", 0, 0],
-        [":n:1>", 0, 0],
-        ["a:n:1>", 0, 0],
-        ["<:name:1245079798410121307", 0, 0],
-        ["<a:name:1245079798410121307", 0, 0],
-        ["<:n:1245079798410121307", 0, 0],
-        ["<a:n:1245079798410121307", 0, 0],
-        ["<:name:1", 0, 0],
-        ["<a:name:1", 0, 0],
-        ["<:n:1", 0, 0],
-        ["<a:n:1", 0, 0],
-        [":name:1245079798410121307", 0, 0],
-        ["a:name:1245079798410121307", 0, 0],
-        [":n:1245079798410121307", 0, 0],
-        ["a:n:1245079798410121307", 0, 0],
-        [":name:1", 0, 0],
-        ["a:name:1", 0, 0],
-        [":n:1", 0, 0],
-        ["a:n:1", 0, 0],
-        ["🫸<:id:3458>", 1, 1],
-        ["🫸<:custom_emoji:3458>🫸", 2, 1],
-        ["<:custom:3454458>🫸<:fish:3453453453458>🫸<:something:3458>", 2, 3],
-    ].forEach(([messageContent, expectedEmojiCount, expectedCustomEmojiCount]) =>
+        ["", 0, 0, 0],
+        [" ID:", 0, 0, 0],
+        // ["\u{0023}ID: a", 0, 0, 0],
+        ["\u{0030}ID: a", 0, 0, 0],
+        ["\u{0039}id: ", 0, 0, 0],
+        ["\u{00AE}iD: a", 0, 0, 0],
+        ["ID: a🫸", 1, 0, 1],
+        ["ID: 🫸 ID: 🫸", 2, 0, 0],
+        ["ID: a🫸 ID: a🫸", 2, 0, 2],
+        [" 🫸🫸ID: ", 2, 0, 0],
+        ["🫸ID: x🫸 ", 2, 0, 1],
+        [" 🫸ID: 🫸ID:  ", 2, 0, 0],
+        ["<:blah:345802398509358903485093> ID: a🫸", 1, 1, 1],
+        ["<:name:1245079798410121307>ID: ", 0, 1, 0],
+        ["ID: something <a:name:1245079798410121307>", 0, 1, 1],
+        ["ID:    s    <:n:1245079798410121307> ID:     d", 0, 1, 2],
+        ["<a:n:1245079798410121307>WID: ", 0, 1, 0],
+        ["<:name:1>", 0, 1, 0],
+        ["<a:name:1>", 0, 1, 0],
+        ["<:n:1>", 0, 1, 0],
+        ["<a:n:1>", 0, 1, 0],
+        ["<a:-:a>", 0, 0, 0],
+        ["<a:n:a>", 0, 0, 0],
+        ["<b:n:1>", 0, 0, 0],
+        ["<ab:n:1>", 0, 0, 0],
+        ["<ba:n:1>", 0, 0, 0],
+        ["<::1245079798410121307>", 0, 0, 0],
+        ["<a::1245079798410121307>ID: abcsID: abcd.", 0, 0, 1],
+        ["<::1>", 0, 0, 0],
+        ["<a::1>", 0, 0, 0],
+        ["<:name:>", 0, 0, 0],
+        ["<a:name:>", 0, 0, 0],
+        ["<:n:>", 0, 0, 0],
+        ["<a:n:>", 0, 0, 0],
+        [":name:1245079798410121307>", 0, 0, 0],
+        ["a:name:1245079798410121307>", 0, 0, 0],
+        [":n:1245079798410121307>", 0, 0, 0],
+        ["a:n:1245079798410121307>", 0, 0, 0],
+        [":name:1>", 0, 0, 0],
+        ["a:name:1>", 0, 0, 0],
+        [":n:1>", 0, 0, 0],
+        ["a:n:1>", 0, 0, 0],
+        ["<:name:1245079798410121307", 0, 0, 0],
+        ["<a:name:1245079798410121307", 0, 0, 0],
+        ["<:n:1245079798410121307", 0, 0, 0],
+        ["<a:n:1245079798410121307", 0, 0, 0],
+        ["<:name:1", 0, 0, 0],
+        ["<a:name:1", 0, 0, 0],
+        ["<:n:1", 0, 0, 0],
+        ["<a:n:1", 0, 0, 0],
+        [":name:1245079798410121307", 0, 0, 0],
+        ["a:name:1245079798410121307", 0, 0, 0],
+        [":n:1245079798410121307", 0, 0, 0],
+        ["a:n:1245079798410121307", 0, 0, 0],
+        [":name:1", 0, 0, 0],
+        ["a:name:1 ID: abcs.ID: abcd.", 0, 0, 2],
+        [":n:1", 0, 0, 0],
+        ["a:n:1", 0, 0, 0],
+        ["🫸<:id:3458>", 1, 1, 0],
+        ["🫸<:custom_emoji:3458>🫸", 2, 1, 0],
+        ["<:custom:3454458>🫸<:fish:3453453453458>🫸<:something:3458>", 2, 3, 0],
+        [`<:custom:3454458> ID: a custom emoji ID: whoopee
+🐈ID: an emoji of a cat. ID: an emoji of a castle 
+
+🏰`, 2, 1, 4],
+    ].forEach(([content, expectedEmojiCount, expectedCustomEmojiCount, expectedImageIdCount]) =>
         it(
-            `That "${messageContent}" contains ${expectedEmojiCount} emoji characters and ${expectedCustomEmojiCount} custom emoji references.`,
+            `That "${content}" contains ${expectedEmojiCount} emoji characters and ${expectedCustomEmojiCount} custom emoji references and ${expectedImageIdCount} image ids.`,
             () => {
                 const imageIdStats = factory
                     .createIdBotMessage({
                         id: createUuid(),
                         attachments: new Map(),
-                        content: messageContent
+                        content
                     }).imageIdStats;
                 expect(imageIdStats.emojiCount).toBe(expectedEmojiCount);
                 expect(imageIdStats.customEmojiCount).toBe(expectedCustomEmojiCount);
-            }
-        )
-    )
-);
-
-
-describe(
-    "Image ID counting in message content",
-    () => [
-        ["", 0],
-        ["         ", 0],
-        ["ID:", 0],
-        ["ID: a", 1],
-        ["ID: ab", 1],
-        ["ID: abc", 1],
-        ["ID: abcd", 1],
-        ["ID: abcd. ID: abcd.", 2],
-        ["ID: abcd. ID: a", 2],
-        ["ID: aID: abcd.", 1],
-        ["ID: abcsID: abcd.", 1],
-        ["ID: abcs. ID: abcd.", 2],
-        ["ID: abcs ID: abcd.     ID: abcd", 3]
-    ].forEach(([messageContent, expectedImageIdCount]) =>
-        it(
-            `That "${messageContent}" contains ${expectedImageIdCount} identifiers`,
-            () => {
-                const discordMessage = factory
-                    .createIdBotMessage({
-                        id: createUuid(),
-                        attachments: new Map(),
-                        content: messageContent
-                    });
-
-                expect(discordMessage.imageIdStats.imageIdentifierCount).toBe(expectedImageIdCount);
+                expect(imageIdStats.imageIdentifierCount).toBe(expectedImageIdCount);
             }
         )
     )

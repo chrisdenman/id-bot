@@ -14,14 +14,16 @@ class IdBot {
     #discordInterface;
 
     /**
+     * A cache that maps: the original message id to reminder message id.
+     *
      * @type Cache
      */
     #cache;
 
     /**
-     * @type MaxStaleCacheManager
+     * @type CacheMaxStaleManager
      */
-    #maxStaleCacheManager;
+    #cacheMaxStaleManager;
 
     /**
      * @type Logger
@@ -55,6 +57,7 @@ class IdBot {
         if (replyId) {
             this.#deleteChannelMessage(message.channel, replyId);
             this.#cache.remove(messageId);
+            this.#logger.debug(this.#cache);
         } else {
             this.#logger.warn(`${message.toIdString()} has no known replies`);
         }
@@ -62,7 +65,7 @@ class IdBot {
 
     #onClientReady() {
         this.#logger.info(`Ready`);
-        this.#maxStaleCacheManager.start();
+        this.#cacheMaxStaleManager.start();
     }
 
     /**
@@ -95,6 +98,7 @@ class IdBot {
                 this.#logger.debug(`${message.toIdString()} is our new reminder reply to ${referencedMessageId}."`);
 
                 this.#cache.set(referencedMessageId, message.id);
+                this.#logger.debug(this.#cache);
             }
         }
     };
@@ -112,9 +116,9 @@ class IdBot {
             const imageIdStats = updatedMessage.imageIdStats;
 
             if (!imageIdStats.isCorrectlyIdentified) {
-                this.#deleteOurReplyTo(updatedMessage);
                 const replyMessageContent = this.#reminderMessage(imageIdStats);
                 this.#logger.debug(`${updatedMessage.toIdString()} not correctly identified, replying with "${replyMessageContent}"`);
+                this.#deleteOurReplyTo(updatedMessage);
                 this.#discordInterface.replyTo(updatedMessage, replyMessageContent);
             } else {
                 this.#deleteOurReplyTo(updatedMessage);
@@ -136,18 +140,18 @@ class IdBot {
 
     /**
      * @param {Cache} cache
-     * @param {MaxStaleCacheManager} maxStaleCacheManager
+     * @param {CacheMaxStaleManager} cacheMaxStaleManager
      * @param {DiscordInterface} discordInterface
      * @param {Logger} logger
      */
     constructor(
         cache,
-        maxStaleCacheManager,
+        cacheMaxStaleManager,
         discordInterface,
         logger
     ) {
         this.#cache = cache;
-        this.#maxStaleCacheManager = maxStaleCacheManager;
+        this.#cacheMaxStaleManager = cacheMaxStaleManager;
         this.#discordInterface = discordInterface
             .setClientReadyHandler(this.#onClientReady.bind(this))
             .setMessageCreateHandler(this.#onMessageCreate.bind(this))
@@ -165,7 +169,7 @@ class IdBot {
 
     close() {
         this.#discordInterface.close();
-        this.#maxStaleCacheManager.stop();
+        this.#cacheMaxStaleManager.stop();
     }
 }
 

@@ -107,7 +107,7 @@ class Cache {
     }
 
     toString() {
-        return `Cache(ktv=${this.#keyToValue}, ktm=${this.#keyToMetaData}, )`;
+        return `Cache(ktv=${[...this.#keyToValue.entries()]}, ktm=${[...this.#keyToMetaData.entries()]}, )`;
     }
 }
 
