@@ -51,7 +51,7 @@ describe("Tests for our Cache", () => {
     });
 
     it("Newly added cache entries have a 'createdAt' value greater or equal than that sampled before population.", () => {
-        const then = factory.utcTimeStampNow;
+        const then = factory.getNowInMilliSeconds;
 
         const meta = setK0V0().getMeta(k0);
 
@@ -64,7 +64,7 @@ describe("Tests for our Cache", () => {
 
         expect(metaBefore.lastAccessedAt).toEqual(metaBefore.createdAt);
 
-        const then = factory.utcTimeStampNow;
+        const then = factory.getNowInMilliSeconds;
         cache.get(k0);
         const metaAfter = cache.getMeta(k0);
 
@@ -78,7 +78,7 @@ describe("Tests for our Cache", () => {
 
         expect(metaBefore.lastUpdatedAt).toBeUndefined();
 
-        const then = factory.utcTimeStampNow;
+        const then = factory.getNowInMilliSeconds;
         cache.set(k0, newValue);
         const metaAfter = cache.getMeta(k0);
 

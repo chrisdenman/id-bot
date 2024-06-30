@@ -45,7 +45,7 @@ class Cache {
             const value = this.#keyToValue.get(key);
 
             this.#keyToMetaData.set(key, this.#factory.withCacheAccess(this.#keyToMetaData.get(key)));
-            this.#logger.debug(`<[${key}]`);
+            this.#logger.debug(`<[${key}=${value}]`);
 
             return value;
         } else {

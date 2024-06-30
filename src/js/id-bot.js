@@ -42,7 +42,7 @@ class IdBot {
      * @param {Channel} channel
      * @param messageId
      */
-    #deleteChannelMessage(channel, messageId) {
+    async #deleteChannelMessage(channel, messageId) {
         this.#logger.debug(`deleting channel message with id=${messageId}`);
         this.#discordInterface.deleteMessage(channel, messageId);
     }
@@ -53,11 +53,15 @@ class IdBot {
     #deleteOurReplyTo(message) {
         const messageId = message.id;
         this.#logger.info(`deleting our reply to ${message.toIdString()}`);
+
         const replyId = this.#cache.get(messageId);
         if (replyId) {
-            this.#deleteChannelMessage(message.channel, replyId);
-            this.#cache.remove(messageId);
-            this.#logger.debug(this.#cache);
+            this
+                .#deleteChannelMessage(message.channel, replyId)
+                .then(() => {
+                    this.#cache.remove(messageId);
+                    this.#logger.debug(this.#cache);
+                });
         } else {
             this.#logger.warn(`${message.toIdString()} has no known replies`);
         }
@@ -74,17 +78,16 @@ class IdBot {
      *  1. if it is human authored and incorrectly identified, we post a reminder reply message
      *  2. else, if it's a self-authored reply, we cache: m.referencedMessageId -> m.id
      *
-     * Can we store arbitrary data in a message?
-     *
      * @param {IdBotMessage} message
      *
-     * @returns {Promise<void>}
+     * @returns {Promise<undefined>}
      */
     #onMessageCreate = async message => {
         this.#logger.debug(`new ${message}`);
 
         if (message.isAuthorHuman) {
             const imageIdStats = message.imageIdStats;
+
             if (!imageIdStats.isCorrectlyIdentified) {
                 const reminderMessage = this.#reminderMessage(imageIdStats);
                 this.#logger.debug(
@@ -116,9 +119,9 @@ class IdBot {
             const imageIdStats = updatedMessage.imageIdStats;
 
             if (!imageIdStats.isCorrectlyIdentified) {
+                this.#deleteOurReplyTo(updatedMessage);
                 const replyMessageContent = this.#reminderMessage(imageIdStats);
                 this.#logger.debug(`${updatedMessage.toIdString()} not correctly identified, replying with "${replyMessageContent}"`);
-                this.#deleteOurReplyTo(updatedMessage);
                 this.#discordInterface.replyTo(updatedMessage, replyMessageContent);
             } else {
                 this.#deleteOurReplyTo(updatedMessage);
@@ -133,7 +136,7 @@ class IdBot {
     #onMessageDelete = async message => {
         this.#logger.debug(`deleted id=${message.toIdString()}`);
         if (message.isAuthorHuman) {
-            this.#logger.debug(`onMessageDelete: message author is human`);
+            this.#logger.debug(`deleted message's author is human`);
             this.#deleteOurReplyTo(message);
         }
     };

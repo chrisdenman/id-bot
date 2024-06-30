@@ -1,6 +1,3 @@
-import {isImageMediaType} from "./media-type.js";
-import {numberOfEmojiContained} from "./emoji.js";
-
 /**
  * @typedef {typeof import('./image-id-stats.js')['ImageIdStats']} ImageIdStats
  * @typedef {typeof import('discord.js')['Snowflake']} Snowflake
@@ -17,20 +14,15 @@ class IdBotMessage {
      */
     #imageIdStats;
 
-    /**
-     * @type RegExp
-     */
-    #MESSAGE_ID_REGEXP = /(?<=(^|\s|\W)ID:\s*)(\w+)(?!\WID:)/svg;
-
-    /**
-     * @type RegExp
-     */
-    #CUSTOM_EMOJI_REGEX = /<(a)?:(?<name>\w+):(?<id>\d+)>/g;
 
     /**
      * @type Message
      */
     #discordJsMessage;
+
+    get discordJsMessage() {
+        return this.#discordJsMessage;
+    }
 
     get id() {
         return this.#discordJsMessage.id;
@@ -49,12 +41,6 @@ class IdBotMessage {
         return this.#discordJsMessage.content;
     }
 
-    /**
-     * @param {string} content
-     */
-    reply(content) {
-        return this.#discordJsMessage.reply(content);
-    }
 
     /**
      * @param {Snowflake} authorId
@@ -107,29 +93,12 @@ class IdBotMessage {
     }
 
     /**
-     * @param {Factory} factory
+     * @param {ImageIdStats} imageIdStats
      * @param {Message} discordJsMessage the discord.js sourced discordJsMessage
      */
-    constructor(factory, discordJsMessage) {
+    constructor(imageIdStats, discordJsMessage) {
         this.#discordJsMessage = discordJsMessage;
-
-        const content = discordJsMessage.content;
-        const contentCustomEmojiMatches = [...content.matchAll(this.#CUSTOM_EMOJI_REGEX)];
-
-        const contentStrippedOfCustomEmoji = content.replaceAll(this.#CUSTOM_EMOJI_REGEX, "");
-        const numberOfEmoji = numberOfEmojiContained(contentStrippedOfCustomEmoji);
-
-        const idMatches = [...content.matchAll(this.#MESSAGE_ID_REGEXP)];
-
-        this.#imageIdStats = factory.createImageIdStats(
-            [...discordJsMessage.attachments.values()]
-                .map(v => v.contentType)
-                .filter(isImageMediaType)
-                .length,
-            numberOfEmoji,
-            contentCustomEmojiMatches.length,
-            idMatches.length
-        );
+        this.#imageIdStats = imageIdStats;
     }
 }
 

@@ -98,17 +98,13 @@ class DiscordInterface {
     /**
      * @param {IdBotMessage} received
      * @param {string} content
+     * @return Promise<Message>
      */
-    replyTo(received, content) {
+    async replyTo(received, content) {
         this._logger.debug(`sending reply to ${received.id} with "${content}"`);
-        received.reply(content);
+
+        return received.discordJsMessage.reply(content);
     }
-
-    update = (message, content) => message
-        .edit(content)
-        .then(updatedMessage => this._logger.log(`Updated ${message.id} to "${updatedMessage.content}"`))
-        .catch(e => this._logger.error(`could not delete reply with id=${message.id}`, e));
-
 
     /**
      * @param {Channel} channel
@@ -116,7 +112,8 @@ class DiscordInterface {
      */
     deleteMessage(channel, messageId) {
         this._logger.debug(`attempting to delete replies to message with id=${messageId}`);
-        channel
+
+        return channel
             .messages
             .delete(messageId)
             .then(() => this._logger.debug(`deleted reply with id=${messageId}`))

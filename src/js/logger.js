@@ -16,7 +16,8 @@ class Logger {
         this.#prefix = prefix;
     }
 
-    #format = (message, level) => `${level ? (level + ":") : ":"}${this.#prefix ? (this.#prefix + ":") : ":"}${message}`;
+    #format = (message, level) => `${level ? (level + ":") : ":"}
+        ${this.#prefix ? (this.#prefix + ":") : ":"}${message}`;
 
     /**
      * @param {*} message
@@ -47,7 +48,7 @@ class Logger {
     /**
      * @param {*} message
      */
-    warn = message => this.#console.warn(this.#format(message, "WARN"));
+    warn = message => this.#console.warn(this.#format(message));
 }
 
 export {Logger};

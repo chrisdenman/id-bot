@@ -9,6 +9,8 @@ import {GatewayIntentBits} from "discord-api-types/v10";
 import {DiscordInterface} from "./discord-interface.js";
 import {Application} from "./application.js";
 import {CacheMaxStaleManager} from "./cache-max-stale-manager.js";
+import {numberOfEmojiContained} from "./emoji.js";
+import {isImageMediaType} from "./media-type.js";
 
 const CLIENT_OPTIONS = {
     intents: [
@@ -19,6 +21,16 @@ const CLIENT_OPTIONS = {
 };
 
 class Factory {
+
+    /**
+     * @type RegExp
+     */
+    #MESSAGE_ID_REGEXP = /(?<=(^|\s|\W)ID:\s*)(\w+)(?!\WID:)/svg;
+
+    /**
+     * @type RegExp
+     */
+    #CUSTOM_EMOJI_REGEX = /<(a)?:(?<name>\w+):(?<id>\d+)>/g;
 
     static get #CLIENT_OPTIONS() {
         return CLIENT_OPTIONS;
@@ -33,7 +45,8 @@ class Factory {
      */
     createCacheExpirator(cache, tickIntervalDurationMilliSeconds = 100, maxStaleLifetimeMilliSeconds = undefined) {
         return new CacheMaxStaleManager(
-            cache, this.createLogger("MaxStaleCacheManager"),
+            cache,
+            this.createLogger("MaxStaleCacheManager"),
             this,
             tickIntervalDurationMilliSeconds,
             maxStaleLifetimeMilliSeconds
@@ -96,8 +109,8 @@ class Factory {
      *
      * @returns {number}
      */
-    get utcTimeStampNow() {
-        return new Date().getUTCMilliseconds();
+    get getNowInMilliSeconds() {
+        return Date.now();
     }
 
     /**
@@ -105,7 +118,28 @@ class Factory {
      * @param discordJsMessage
      * @returns {IdBotMessage}
      */
-    createIdBotMessage = discordJsMessage => new IdBotMessage(this, discordJsMessage);
+    createIdBotMessage = discordJsMessage => {
+        const content = discordJsMessage.content;
+
+        const contentCustomEmojiMatches = [...content.matchAll(this.#CUSTOM_EMOJI_REGEX)];
+
+        const contentStrippedOfCustomEmoji = content.replaceAll(this.#CUSTOM_EMOJI_REGEX, "");
+        const numberOfEmoji = numberOfEmojiContained(contentStrippedOfCustomEmoji);
+
+        const idMatches = [...content.matchAll(this.#MESSAGE_ID_REGEXP)];
+
+        const imageIdStats = this.createImageIdStats(
+            [...discordJsMessage.attachments.values()]
+                .map(v => v.contentType)
+                .filter(isImageMediaType)
+                .length,
+            numberOfEmoji,
+            contentCustomEmojiMatches.length,
+            idMatches.length
+        );
+
+        return new IdBotMessage(imageIdStats, discordJsMessage);
+    };
 
     /**
      * @param {string} [prefix]
@@ -119,15 +153,15 @@ class Factory {
      * @returns {CacheMeta}
      */
     createCacheMeta = key => {
-        const now = this.utcTimeStampNow;
-        
+        const now = this.getNowInMilliSeconds;
+
         return new CacheMeta(key, now, now);
     };
-    
+
     withCacheAccess = cacheMeta => new CacheMeta(
         cacheMeta.key,
         cacheMeta.createdAt,
-        this.utcTimeStampNow,
+        this.getNowInMilliSeconds,
         cacheMeta.lastUpdatedAt
     );
 
@@ -135,7 +169,7 @@ class Factory {
         cacheMeta.key,
         cacheMeta.createdAt,
         cacheMeta.lastAccessedAt,
-        this.utcTimeStampNow
+        this.getNowInMilliSeconds
     );
 
     /**

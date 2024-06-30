@@ -63,14 +63,12 @@ class CacheMaxStaleManager {
     }
 
     #expireStaleCacheEntries() {
-        const NOW = this.#factory.utcTimeStampNow;
-
+        const NOW = this.#factory.getNowInMilliSeconds;
         [...this.#cache.metaData]
-            .filter(it => it.lastAccessedAt + this.#maxStaleLifetimeMilliSeconds > NOW)
-            .map(it => it.key)
+            .filter(it => NOW - it.lastAccessedAt > this.#maxStaleLifetimeMilliSeconds)
             .map(it => {
-                this.#cache.remove(it);
-                this.#logger.debug(`Expired key @ ${NOW}`);
+                this.#cache.remove(it.key);
+                this.#logger.debug(`Expired key ${it.key}`);
             });
     }
 

@@ -1,4 +1,4 @@
-# [ID Bot](https://github.com/chrisdenman/id-bot) 0.0.3
+# [ID Bot](https://github.com/chrisdenman/id-bot) 0.0.4
                                                                 
 ![An stylised image of the project's logo formed of a lower-case i cursively joining a capitalised D](res/img/id-gum-logo.png)
 
