@@ -38,7 +38,7 @@ class ImageIdStats {
         this.#entitiesRequiringIdentificationCount = imageAttachmentCount + emojiCount + customEmojiCount;
 
         this.#imageIdentifierCount = imageIdentifierCount;
-    }
+    };
 
     /**
      * Returns true if `imageIdentifierCount < entitiesRequiringIdentificationCount`
@@ -47,7 +47,7 @@ class ImageIdStats {
      */
     get isUnderIdentified() {
         return this.#imageIdentifierCount < this.#entitiesRequiringIdentificationCount;
-    }
+    };
 
     /**
      * Returns true iff. `imageIdentifierCount == entitiesRequiringIdentificationCount`
@@ -56,7 +56,7 @@ class ImageIdStats {
      */
     get isCorrectlyIdentified() {
         return this.#imageIdentifierCount === this.#entitiesRequiringIdentificationCount;
-    }
+    };
 
     /**
      * The number of Unicode emoji defined.
@@ -65,7 +65,7 @@ class ImageIdStats {
      */
     get emojiCount() {
         return this.#emojiCount;
-    }
+    };
 
     /**
      * The number of custom (Discord) emoji defined.
@@ -74,7 +74,7 @@ class ImageIdStats {
      */
     get customEmojiCount() {
         return this.#customEmojiCount;
-    }
+    };
 
     /**
      * The number of image attachments defined.
@@ -83,7 +83,7 @@ class ImageIdStats {
      */
     get imageIdentifierCount() {
         return this.#imageIdentifierCount;
-    }
+    };
 
     /**
      * @returns {string}
@@ -93,7 +93,7 @@ class ImageIdStats {
         const stats = `{attached: ${this.#imageAttachmentCount}, emoji: ${this.#emojiCount}, customEmoji: ${this.#customEmojiCount}, ids: ${this.#imageIdentifierCount}}`;
 
         return `{state: ${description}, counts: ${stats}}`;
-    }
+    };
 }
 
 export {ImageIdStats};

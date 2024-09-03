@@ -2,23 +2,18 @@ import {IdBotMessage} from "./id-bot-message.js";
 import {Cache} from "./cache.js";
 import {CacheMeta} from "./cache-meta.js";
 import {IdBot} from "./id-bot.js";
-import {Logger} from "./logger.js";
 import {ImageIdStats} from "./image-id-stats.js";
-import {Client} from "discord.js";
-import {GatewayIntentBits} from "discord-api-types/v10";
+import {Logger} from "./logger.js";
+import {Client, IntentsBitField} from "discord.js";
 import {DiscordInterface} from "./discord-interface.js";
 import {Application} from "./application.js";
 import {CacheMaxStaleManager} from "./cache-max-stale-manager.js";
 import {numberOfEmojiContained} from "./emoji.js";
 import {isImageMediaType} from "./media-type.js";
 
-const CLIENT_OPTIONS = {
-    intents: [
-        GatewayIntentBits.Guilds,
-        GatewayIntentBits.GuildMessages,
-        GatewayIntentBits.MessageContent
-    ]
-};
+const intents = new IntentsBitField();
+intents.add(IntentsBitField.Flags.Guilds, IntentsBitField.Flags.GuildMessages, IntentsBitField.Flags.MessageContent);
+const CLIENT_OPTIONS = Object.freeze({intents});
 
 class Factory {
 
@@ -34,10 +29,9 @@ class Factory {
 
     static get #CLIENT_OPTIONS() {
         return CLIENT_OPTIONS;
-    }
+    };
 
     /**
-     *
      * @param {Cache} cache
      * @param {number} tickIntervalDurationMilliSeconds
      * @param {number} maxStaleLifetimeMilliSeconds
@@ -51,7 +45,7 @@ class Factory {
             tickIntervalDurationMilliSeconds,
             maxStaleLifetimeMilliSeconds
         );
-    }
+    };
 
     /**
      *
@@ -72,7 +66,7 @@ class Factory {
      */
     createCache() {
         return new Cache(this, this.createLogger("MessageIdToReplyIdCache"));
-    }
+    };
 
     /**
      * @param {string} clientId
@@ -111,7 +105,7 @@ class Factory {
      */
     get getNowInMilliSeconds() {
         return Date.now();
-    }
+    };
 
     /**
      *

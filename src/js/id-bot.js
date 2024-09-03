@@ -45,7 +45,7 @@ class IdBot {
     async #deleteChannelMessage(channel, messageId) {
         this.#logger.debug(`deleting channel message with id=${messageId}`);
         this.#discordInterface.deleteMessage(channel, messageId);
-    }
+    };
 
     /**
      * @param {IdBotMessage} message
@@ -65,12 +65,12 @@ class IdBot {
         } else {
             this.#logger.warn(`${message.toIdString()} has no known replies`);
         }
-    }
+    };
 
     #onClientReady() {
         this.#logger.info(`Ready`);
         this.#cacheMaxStaleManager.start();
-    }
+    };
 
     /**
      * For every created event for message 'm':
@@ -161,19 +161,19 @@ class IdBot {
             .setMessageUpdateHandler(this.#onMessageUpdate.bind(this))
             .setMessageDeleteHandler(this.#onMessageDelete.bind(this));
         this.#logger = logger;
-    }
+    };
 
     /**
      * @param {string} token
      */
     login(token) {
         this.#discordInterface.login(token);
-    }
+    };
 
     close() {
         this.#discordInterface.close();
         this.#cacheMaxStaleManager.stop();
-    }
+    };
 }
 
 export {IdBot};

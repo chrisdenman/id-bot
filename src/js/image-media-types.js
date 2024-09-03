@@ -80,6 +80,7 @@ const IMAGE_MEDIA_TYPES = Object.freeze([
     "image/webp",
     "image/wmf",
     "image/emf",
-    "image/wmf"]);
+    "image/wmf"
+]);
 
 export {IMAGE_MEDIA_TYPES};

@@ -7,13 +7,15 @@
  */
 import {MessageType} from "discord-api-types/v10";
 
+/**
+ * A facade for a Discord JS Message.
+ */
 class IdBotMessage {
 
     /**
      * @type ImageIdStats
      */
     #imageIdStats;
-
 
     /**
      * @type Message
@@ -22,46 +24,45 @@ class IdBotMessage {
 
     get discordJsMessage() {
         return this.#discordJsMessage;
-    }
+    };
 
     get id() {
         return this.#discordJsMessage.id;
-    }
+    };
 
     get channel() {
         return this.#discordJsMessage.channel;
-    }
+    };
 
     get referencedMessageId() {
         // noinspection JSUnresolvedReference
         return this.#discordJsMessage?.reference?.messageId;
-    }
+    };
 
     get content() {
         return this.#discordJsMessage.content;
-    }
-
+    };
 
     /**
      * @param {Snowflake} authorId
      */
     isAuthoredBy(authorId) {
         return this.#discordJsMessage.author.id === authorId;
-    }
+    };
 
     /**
      * @returns {boolean}
      */
     get isAuthorHuman() {
         return !this.#discordJsMessage.author.bot;
-    }
+    };
 
     /**
      * @returns {boolean}
      */
     get isReply() {
         return this.#discordJsMessage.type === MessageType.Reply;
-    }
+    };
 
     /**
      * @param {Snowflake} authorId
@@ -69,7 +70,7 @@ class IdBotMessage {
      */
     isReplyBy(authorId) {
         return this.isAuthoredBy(authorId) && this.isReply;
-    }
+    };
 
     /**
      * @returns {ImageIdStats} Details on the number of image attachments and image identifiers
@@ -83,14 +84,14 @@ class IdBotMessage {
      */
     toString() {
         return `message(id=${this.id}, content=${this.content}, channel=${this.channel}, isReply=${this.isReply}, isAuthorHuman=${this.isAuthorHuman}, referencedMessageId=${this?.referencedMessageId}, imageIdStats=${this.imageIdStats})`;
-    }
+    };
 
     /**
      * @returns {string}
      */
     toIdString() {
         return `message(id=${this.id}, ...)`;
-    }
+    };
 
     /**
      * @param {ImageIdStats} imageIdStats
@@ -99,7 +100,7 @@ class IdBotMessage {
     constructor(imageIdStats, discordJsMessage) {
         this.#discordJsMessage = discordJsMessage;
         this.#imageIdStats = imageIdStats;
-    }
+    };
 }
 
 export {

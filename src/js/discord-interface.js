@@ -65,29 +65,29 @@ class DiscordInterface {
         client.on(Events.MessageCreate, this._onMessageCreate.bind(this));
         client.on(Events.MessageUpdate, this._onMessageUpdate.bind(this));
         client.on(Events.MessageDelete, this._onMessageDelete.bind(this));
-    }
+    };
 
     _createIdBotMessage = discordJsMessage => this.#factory.createIdBotMessage(discordJsMessage);
 
     _onClientReady(client) {
         this._logger.log(`Logged in as "${client.user.tag}" and ready.`);
         this?.#onClientReadyHandler(client);
-    }
+    };
 
     async _onMessageCreate(message) {
         this?.#onMessageCreateHandler(this._createIdBotMessage(message));
-    }
+    };
 
     async _onMessageUpdate(originalMessage, updatedMessage) {
         this?.#onMessageUpdateHandler(
             this._createIdBotMessage(originalMessage),
             this._createIdBotMessage(updatedMessage),
         );
-    }
+    };
 
     async _onMessageDelete(message) {
         this?.#onMessageDeleteHandler(this._createIdBotMessage(message));
-    }
+    };
 
     /**
      * @param {IdBotMessage} message
@@ -104,7 +104,7 @@ class DiscordInterface {
         this._logger.debug(`sending reply to ${received.id} with "${content}"`);
 
         return received.discordJsMessage.reply(content);
-    }
+    };
 
     /**
      * @param {Channel} channel
@@ -118,44 +118,44 @@ class DiscordInterface {
             .delete(messageId)
             .then(() => this._logger.debug(`deleted reply with id=${messageId}`))
             .catch(e => this._logger.error(`could not delete reply with id=${messageId}`, e));
-    }
+    };
 
     /**
      * @param {string} token
      */
     login(token) {
         this._client.login(token).catch(e => this._logger.error("Unable to log-in", e));
-    }
+    };
 
     close() {
         this._logger.info("Closing connection...");
         
         return this._client.close;
-    }
+    };
 
     setClientReadyHandler(onClientReadyHandler) {
         this.#onClientReadyHandler = onClientReadyHandler;
 
         return this;
-    }
+    };
 
     setMessageCreateHandler(messageCreateHandler) {
         this.#onMessageCreateHandler = messageCreateHandler;
 
         return this;
-    }
+    };
 
     setMessageUpdateHandler(messageCreateHandler) {
         this.#onMessageUpdateHandler = messageCreateHandler;
 
         return this;
-    }
+    };
 
     setMessageDeleteHandler(messageDeleteHandler) {
         this.#onMessageDeleteHandler = messageDeleteHandler;
 
         return this;
-    }
+    };
 }
 
 export {

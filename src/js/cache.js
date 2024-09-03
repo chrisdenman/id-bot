@@ -33,7 +33,7 @@ class Cache {
 
         this.#keyToValue = new Map();
         this.#keyToMetaData = new Map();
-    }
+    };
 
     /**
      * @param {*} key
@@ -53,7 +53,7 @@ class Cache {
 
             return undefined;
         }
-    }
+    };
 
     /**
      * @param {*} key
@@ -69,8 +69,7 @@ class Cache {
         this.#keyToValue.set(key, value);
 
         this.#logger.debug(`${isUpdate ? "=" : ">"}[${key}->${value}] : ${this.#keyToValue.size} values cached.`);
-    }
-
+    };
 
     /**
      * @param {*} key
@@ -78,7 +77,7 @@ class Cache {
      */
     getMeta(key) {
         return this.#keyToValue.has(key) ? this.#keyToMetaData.get(key) : undefined;
-    }
+    };
 
     /**
      * @returns {Iterator<CacheMeta>}
@@ -88,7 +87,7 @@ class Cache {
             .from(this.#keyToMetaData.values())
             .sort((e0, e1) => e0.lastAccessedAt - e1.lastAccessedAt)
             .values();
-    }
+    };
 
     /**
      * @param {*} key
@@ -104,11 +103,11 @@ class Cache {
         );
 
         return dataDeleted;
-    }
+    };
 
     toString() {
         return `Cache(ktv=${[...this.#keyToValue.entries()]}, ktm=${[...this.#keyToMetaData.entries()]}, )`;
-    }
+    };
 }
 
 export {Cache, CacheMeta};

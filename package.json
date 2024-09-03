@@ -1,6 +1,6 @@
 {
   "name": "@ceilingcat/id-bot",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "A discord bot to remind users to tag uploaded images with identifiers.",
   "scripts": {
     "lint": "eslint \"src/*/*.js\"",

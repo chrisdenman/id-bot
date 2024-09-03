@@ -23,24 +23,24 @@ class Application {
         this.#idBot = idBot;
         process.on("SIGTERM", this.terminate.bind(this));
         process.on("SIGINT", this.terminate.bind(this));
-    }
+    };
 
     /**
      * @param {string} token
      */
     start(token) {
         this.#idBot.login(token);
-    }
+    };
 
     stop() {
         this.#idBot.close();
         this.#process.exit(EXIT_CODE_NORMAL);
-    }
+    };
 
     terminate() {
         this.#idBot.close();
         this.#process.exit(EXIT_CODE_ABNORMAL);
-    }
+    };
 }
 
 export { Application };

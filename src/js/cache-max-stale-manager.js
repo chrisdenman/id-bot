@@ -60,7 +60,7 @@ class CacheMaxStaleManager {
         this.#tickIntervalDurationMilliSeconds = tickIntervalDurationMilliSeconds;
         this.#maxStaleLifetimeMilliSeconds = maxStaleLifetimeMilliSeconds;
         this.#eternal = this.#maxStaleLifetimeMilliSeconds === undefined;
-    }
+    };
 
     #expireStaleCacheEntries() {
         const NOW = this.#factory.getNowInMilliSeconds;
@@ -70,7 +70,7 @@ class CacheMaxStaleManager {
                 this.#cache.remove(it.key);
                 this.#logger.debug(`Expired key ${it.key}`);
             });
-    }
+    };
 
     start() {
         if (this.#state !== 1) {
@@ -82,7 +82,7 @@ class CacheMaxStaleManager {
             }
             this.#state = 1;
         }
-    }
+    };
 
     stop() {
         if (this.#state === 1) {
@@ -92,7 +92,7 @@ class CacheMaxStaleManager {
             }
             this.#state = 0;
         }
-    }
+    };
 }
 
 export {
