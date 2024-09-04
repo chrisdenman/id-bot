@@ -61,6 +61,7 @@ class CacheMeta {
         return this.#lastUpdatedAt;
     };
 
+    /* v8 ignore next 2 */
     toString() {
         return `CacheMeta(key=${this.#key} createdAt=${this.#createdAt} #lastAccessedAt=${this.#lastAccessedAt} lastUpdatedAt=${this.#lastUpdatedAt})`;
     };

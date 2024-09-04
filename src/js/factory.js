@@ -3,7 +3,7 @@ import {Cache} from "./cache.js";
 import {CacheMeta} from "./cache-meta.js";
 import {IdBot} from "./id-bot.js";
 import {ImageIdStats} from "./image-id-stats.js";
-import {Logger} from "./logger.js";
+import {LEVEL_DEBUG, LEVEL_LOG, LEVEL_ERROR, LEVEL_FATAL, LEVEL_WARN, Logger} from "./logger.js";
 import {Client, IntentsBitField} from "discord.js";
 import {DiscordInterface} from "./discord-interface.js";
 import {Application} from "./application.js";
@@ -16,6 +16,8 @@ intents.add(IntentsBitField.Flags.Guilds, IntentsBitField.Flags.GuildMessages, I
 const CLIENT_OPTIONS = Object.freeze({intents});
 
 class Factory {
+
+    #logLevel;
 
     /**
      * @type RegExp
@@ -30,6 +32,10 @@ class Factory {
     static get #CLIENT_OPTIONS() {
         return CLIENT_OPTIONS;
     };
+
+    constructor(logLevel = LEVEL_DEBUG | LEVEL_LOG | LEVEL_WARN | LEVEL_ERROR | LEVEL_FATAL) {
+        this.#logLevel = logLevel;
+    }
 
     /**
      * @param {Cache} cache
@@ -56,7 +62,8 @@ class Factory {
      * @returns {Application}
      */
     createApplication = (clientId, tickIntervalDurationMilliSeconds, maxStaleCacheLifetimeMilliSeconds) =>
-        new Application(process,
+        new Application(
+            process,
             this.createIdBot(clientId, tickIntervalDurationMilliSeconds, maxStaleCacheLifetimeMilliSeconds)
         );
 
@@ -139,7 +146,7 @@ class Factory {
      * @param {string} [prefix]
      * @returns {Logger}
      */
-    createLogger = prefix => new Logger(console, prefix);
+    createLogger = (prefix = undefined) => new Logger(console, this.#logLevel, prefix);
 
     /**
      * @param {*} key

@@ -105,6 +105,7 @@ class Cache {
         return dataDeleted;
     };
 
+    /* v8 ignore next 2 */
     toString() {
         return `Cache(ktv=${[...this.#keyToValue.entries()]}, ktm=${[...this.#keyToMetaData.entries()]}, )`;
     };

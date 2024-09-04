@@ -9,3 +9,5 @@
 0.0.4 - `Cache expiration bug fixes and improved factory usage.`
 
 0.0.5 - `Improved the handling of gateway intent bits.`
+
+0.0.6 - `Added logging filtering by level.`
