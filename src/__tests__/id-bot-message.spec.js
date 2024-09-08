@@ -2,8 +2,13 @@ import {expect, describe, it} from "vitest";
 import {createUuid} from "./uuid";
 
 import {Factory} from "../js/factory";
+import {LEVEL_OFF} from "../js/logger.js";
 
-const factory = new Factory();
+const factory = new Factory(
+    LEVEL_OFF,
+    /(?<=(^|\s|\W)ID:\s*)(\w+)(?!\WID:)/svg,
+    /<(a)?:(?<name>\w+):(?<id>\d+)>/g
+);
 
 describe(
     "Emoji, custom-emoji and image-identifier counting..",

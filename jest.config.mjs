@@ -197,4 +197,4 @@ const config = {
 };
 
 // noinspection JSUnusedGlobalSymbols
-export default config
+export default config;

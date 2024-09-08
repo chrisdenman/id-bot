@@ -2,7 +2,7 @@ import {afterEach, beforeEach, describe, expect, it, vi} from "vitest";
 import {Application} from "../js/application";
 import {IdBot} from "../js/id-bot.js";
 import {Factory} from "../js/factory";
-import {Logger} from "../js/logger";
+import {LEVEL_OFF, Logger} from "../js/logger";
 import {DiscordInterfaceHarness} from "./discord-interface-harness";
 import {createUuid} from "./uuid";
 import {MessageType} from "discord-api-types/v10";
@@ -85,7 +85,11 @@ describe("Application startup and shutdown", () => {
     };
 
     beforeEach(() => {
-        factory = new Factory();
+        factory = new Factory(
+            LEVEL_OFF,
+            /(?<=(^|\s|\W)ID:\s*)(\w+)(?!\WID:)/svg,
+            /<(a)?:(?<name>\w+):(?<id>\d+)>/g
+        );
         process = {on: vi.fn(), exit: vi.fn()};
         client = {
             once: vi.fn(),

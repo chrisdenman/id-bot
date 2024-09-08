@@ -20,21 +20,38 @@ class Factory {
     #logLevel;
 
     /**
+     * The regular-expression pattern used for detecting standard image identifiers.
+     *
      * @type RegExp
      */
-    #MESSAGE_ID_REGEXP = /(?<=(^|\s|\W)ID:\s*)(\w+)(?!\WID:)/svg;
+    #messageIdRegex;
 
     /**
+     * The regular-expression pattern used for detecting custom emoji identifiers.
+     *
      * @type RegExp
      */
-    #CUSTOM_EMOJI_REGEX = /<(a)?:(?<name>\w+):(?<id>\d+)>/g;
+    #customEmojiIdRegex;
 
     static get #CLIENT_OPTIONS() {
         return CLIENT_OPTIONS;
     };
 
-    constructor(logLevel = LEVEL_DEBUG | LEVEL_LOG | LEVEL_WARN | LEVEL_ERROR | LEVEL_FATAL) {
+    /**
+     *
+     * @param logLevel the log level to apply
+     * @param messageIdRegex the regular-expression pattern used for detecting standard image identifiers.
+     * @param customEmojiIdRegex the regular-expression pattern used for detecting custom emoji identifiers.
+     * @todo move log level to end
+     */
+    constructor(
+        logLevel = LEVEL_DEBUG | LEVEL_LOG | LEVEL_WARN | LEVEL_ERROR | LEVEL_FATAL,
+        messageIdRegex,
+        customEmojiIdRegex
+    ) {
         this.#logLevel = logLevel;
+        this.#messageIdRegex = messageIdRegex;
+        this.#customEmojiIdRegex = customEmojiIdRegex;
     }
 
     /**
@@ -61,10 +78,18 @@ class Factory {
      *
      * @returns {Application}
      */
-    createApplication = (clientId, tickIntervalDurationMilliSeconds, maxStaleCacheLifetimeMilliSeconds) =>
+    createApplication = (
+        clientId,
+        tickIntervalDurationMilliSeconds,
+        maxStaleCacheLifetimeMilliSeconds
+    ) =>
         new Application(
             process,
-            this.createIdBot(clientId, tickIntervalDurationMilliSeconds, maxStaleCacheLifetimeMilliSeconds)
+            this.createIdBot(
+                clientId,
+                tickIntervalDurationMilliSeconds,
+                maxStaleCacheLifetimeMilliSeconds
+            )
         );
 
     /**
@@ -122,12 +147,12 @@ class Factory {
     createIdBotMessage = discordJsMessage => {
         const content = discordJsMessage.content;
 
-        const contentCustomEmojiMatches = [...content.matchAll(this.#CUSTOM_EMOJI_REGEX)];
+        const contentCustomEmojiMatches = [...content.matchAll(this.#customEmojiIdRegex)];
 
-        const contentStrippedOfCustomEmoji = content.replaceAll(this.#CUSTOM_EMOJI_REGEX, "");
+        const contentStrippedOfCustomEmoji = content.replaceAll(this.#customEmojiIdRegex, "");
         const numberOfEmoji = numberOfEmojiContained(contentStrippedOfCustomEmoji);
 
-        const idMatches = [...content.matchAll(this.#MESSAGE_ID_REGEXP)];
+        const idMatches = [...content.matchAll(this.#messageIdRegex)];
 
         const imageIdStats = this.createImageIdStats(
             [...discordJsMessage.attachments.values()]

@@ -6,6 +6,7 @@ const LEVEL_INFO = LEVEL_LOG << 1;
 const LEVEL_WARN = LEVEL_INFO << 1;
 const LEVEL_ERROR = LEVEL_WARN << 1;
 const LEVEL_FATAL = LEVEL_ERROR << 1;
+const LEVEL_ALL = LEVEL_TRACE | LEVEL_DEBUG | LEVEL_LOG | LEVEL_INFO | LEVEL_WARN | LEVEL_ERROR | LEVEL_FATAL;
 
 class Logger {
 
@@ -29,7 +30,7 @@ class Logger {
     constructor(
         console,
         level = LEVEL_TRACE | LEVEL_DEBUG | LEVEL_LOG | LEVEL_INFO | LEVEL_WARN | LEVEL_ERROR | LEVEL_FATAL,
-        prefix= undefined
+        prefix = undefined
     ) {
         this.#console = console;
         this.#level = level;
@@ -39,7 +40,7 @@ class Logger {
     #isLogged = level => (level & this.#level) !== LEVEL_OFF;
 
     #levelText = (level) => {
-        let levelText= "";
+        let levelText = "";
         switch (level & this.#level) {
             case LEVEL_TRACE:
                 levelText = "TRACE";
@@ -104,7 +105,7 @@ class Logger {
      * @param {*} message
      * @param {Error} [error]
      */
-    error = (message, error= undefined) => {
+    error = (message, error = undefined) => {
         this.#logAt(message, LEVEL_ERROR, this.#console.error);
         if (error) {
             this.#logAt(error, LEVEL_ERROR, this.#console.error);
@@ -126,5 +127,6 @@ export {
     LEVEL_INFO,
     LEVEL_WARN,
     LEVEL_ERROR,
-    LEVEL_FATAL
+    LEVEL_FATAL,
+    LEVEL_ALL
 };

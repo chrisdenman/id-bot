@@ -1,6 +1,7 @@
 import {beforeEach, describe, expect, it, vi} from "vitest";
 import {Factory} from "../js/factory.js";
 import {createUuid} from "./uuid.js";
+import {LEVEL_OFF} from "../js/logger.js";
 
 describe("Tests for our Cache", () => {
 
@@ -32,7 +33,11 @@ describe("Tests for our Cache", () => {
     };
 
     beforeEach(() => {
-        factory = new Factory();
+        factory = new Factory(
+            LEVEL_OFF,
+            /(?<=(^|\s|\W)ID:\s*)(\w+)(?!\WID:)/svg,
+            /<(a)?:(?<name>\w+):(?<id>\d+)>/g
+        );
         cache = factory.createCache();
         [k0, v0, k1, v1] = [createUuid(), createUuid(), createUuid(), createUuid()];
     });
