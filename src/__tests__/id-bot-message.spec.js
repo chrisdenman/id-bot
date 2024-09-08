@@ -5,9 +5,9 @@ import {Factory} from "../js/factory";
 import {LEVEL_OFF} from "../js/logger.js";
 
 const factory = new Factory(
-    LEVEL_OFF,
     /(?<=(^|\s|\W)ID:\s*)(\w+)(?!\WID:)/svg,
-    /<(a)?:(?<name>\w+):(?<id>\d+)>/g
+    /<(a)?:(?<name>\w+):(?<id>\d+)>/g,
+    LEVEL_OFF
 );
 
 describe(

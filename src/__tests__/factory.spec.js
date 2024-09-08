@@ -9,9 +9,9 @@ describe("Tests for our Factory", () => {
     it("That we can create a new application using the factory", () => {
         expect(
             new Factory(
-                LEVEL_OFF,
                 /(?<=(^|\s|\W)ID:\s*)(\w+)(?!\WID:)/svg,
-                /<(a)?:(?<name>\w+):(?<id>\d+)>/g
+                /<(a)?:(?<name>\w+):(?<id>\d+)>/g,
+                LEVEL_OFF
             )
                 .createApplication(
                     createUuid(),

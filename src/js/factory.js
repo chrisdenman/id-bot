@@ -42,12 +42,11 @@ class Factory {
      * @param logLevel the log level to apply
      * @param messageIdRegex the regular-expression pattern used for detecting standard image identifiers.
      * @param customEmojiIdRegex the regular-expression pattern used for detecting custom emoji identifiers.
-     * @todo move log level to end
      */
     constructor(
-        logLevel = LEVEL_DEBUG | LEVEL_LOG | LEVEL_WARN | LEVEL_ERROR | LEVEL_FATAL,
         messageIdRegex,
-        customEmojiIdRegex
+        customEmojiIdRegex,
+        logLevel = LEVEL_DEBUG | LEVEL_LOG | LEVEL_WARN | LEVEL_ERROR | LEVEL_FATAL
     ) {
         this.#logLevel = logLevel;
         this.#messageIdRegex = messageIdRegex;

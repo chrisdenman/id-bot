@@ -86,9 +86,9 @@ describe("Application startup and shutdown", () => {
 
     beforeEach(() => {
         factory = new Factory(
-            LEVEL_OFF,
             /(?<=(^|\s|\W)ID:\s*)(\w+)(?!\WID:)/svg,
-            /<(a)?:(?<name>\w+):(?<id>\d+)>/g
+            /<(a)?:(?<name>\w+):(?<id>\d+)>/g,
+            LEVEL_OFF
         );
         process = {on: vi.fn(), exit: vi.fn()};
         client = {

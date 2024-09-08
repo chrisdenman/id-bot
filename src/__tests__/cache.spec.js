@@ -34,9 +34,9 @@ describe("Tests for our Cache", () => {
 
     beforeEach(() => {
         factory = new Factory(
-            LEVEL_OFF,
             /(?<=(^|\s|\W)ID:\s*)(\w+)(?!\WID:)/svg,
-            /<(a)?:(?<name>\w+):(?<id>\d+)>/g
+            /<(a)?:(?<name>\w+):(?<id>\d+)>/g,
+            LEVEL_OFF
         );
         cache = factory.createCache();
         [k0, v0, k1, v1] = [createUuid(), createUuid(), createUuid(), createUuid()];

@@ -10,9 +10,9 @@ const MESSAGE_ID_REGEX = new RegExp(env[`${id_bot_config_key_prefix}message_id_r
 const CUSTOM_EMOJI_ID_REGEX = new RegExp(env[`${id_bot_config_key_prefix}custom_emoji_id_regex`], "g");
 
 new Factory(
-    LEVEL_ALL,
     MESSAGE_ID_REGEX,
-    CUSTOM_EMOJI_ID_REGEX
+    CUSTOM_EMOJI_ID_REGEX,
+    LEVEL_ALL
 )
     .createApplication(
         CLIENT_ID,
